@@ -1,0 +1,1324 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>静态扫雷 Ver0.2</title>
+  <style>
+    :root {
+      --bg: radial-gradient(circle at top, rgba(61, 214, 255, 0.18), transparent 28%),
+        radial-gradient(circle at 82% 12%, rgba(255, 138, 92, 0.18), transparent 22%),
+        linear-gradient(180deg, #08111f 0%, #101e36 100%);
+      --panel: rgba(8, 18, 34, 0.88);
+      --panel-strong: rgba(11, 22, 42, 0.96);
+      --border: rgba(148, 182, 255, 0.16);
+      --ink: #eef6ff;
+      --muted: #95aeca;
+      --accent: #47d6ff;
+      --accent-strong: #051420;
+      --safe: #72ffd1;
+      --safe-soft: rgba(114, 255, 209, 0.18);
+      --flag: #ff9a62;
+      --flag-soft: rgba(255, 154, 98, 0.18);
+      --danger: #ff5f5c;
+      --danger-soft: rgba(255, 95, 92, 0.22);
+      --unknown: #16243d;
+      --unknown-deep: #0e172b;
+      --shadow: 0 24px 54px rgba(0, 0, 0, 0.28);
+      --radius: 24px;
+      --cell-size: min(8.1vw, 58px);
+      --num-0: #7b97b9;
+      --num-1: #7dd3ff;
+      --num-2: #87f0c2;
+      --num-3: #ffd46e;
+      --num-4: #ffb38c;
+      --num-5: #ff7ea6;
+      --num-6: #c4afff;
+      --num-7: #edf3ff;
+      --num-8: #ffffff;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Trebuchet MS", "Segoe UI", "Microsoft YaHei UI", sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+    }
+
+    button,
+    select {
+      font: inherit;
+    }
+
+    .shell {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 24px 18px 34px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.18fr) minmax(320px, 380px);
+      gap: 22px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+    }
+
+    .play-panel { padding: 24px; }
+    .side-panel { display: grid; gap: 18px; }
+
+    .hero {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      width: fit-content;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--safe), #ebfff7);
+      color: #04111c;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      box-shadow: 0 10px 22px rgba(114, 255, 209, 0.22);
+    }
+
+    h1, h2, h3, p {
+      margin: 0;
+    }
+
+    h1 {
+      font-size: clamp(34px, 4.2vw, 52px);
+      line-height: 1;
+      letter-spacing: 0.02em;
+    }
+
+    .subhead {
+      color: var(--muted);
+      line-height: 1.65;
+      max-width: 72ch;
+    }
+
+    .quick-guide {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .guide-card,
+    .stat,
+    .card,
+    .legend-card,
+    .loss-card {
+      background: var(--panel-strong);
+      border: 1px solid rgba(148, 182, 255, 0.14);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .guide-card {
+      padding: 14px;
+      display: grid;
+      gap: 8px;
+      min-height: 116px;
+    }
+
+    .key-chip,
+    .label {
+      display: inline-flex;
+      width: fit-content;
+      padding: 4px 9px;
+      border-radius: 999px;
+      background: rgba(71, 214, 255, 0.12);
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .guide-copy,
+    .tiny,
+    .difficulty-copy,
+    .answer-caption,
+    .footer-note,
+    .legend-card p,
+    .card p {
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) repeat(2, auto);
+      gap: 12px;
+      align-items: end;
+      margin-bottom: 16px;
+    }
+
+    .field {
+      display: grid;
+      gap: 8px;
+    }
+
+    select {
+      min-height: 50px;
+      width: 100%;
+      padding: 0 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(148, 182, 255, 0.22);
+      background: rgba(16, 29, 51, 0.96);
+      color: var(--ink);
+    }
+
+    button {
+      min-height: 50px;
+      padding: 0 18px;
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      font-weight: 900;
+      transition: transform 0.12s ease, filter 0.12s ease, box-shadow 0.12s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.03);
+    }
+
+    .primary-btn {
+      color: #03111a;
+      background: linear-gradient(135deg, var(--accent), #bdf5ff);
+      box-shadow: 0 14px 28px rgba(71, 214, 255, 0.18);
+    }
+
+    .secondary-btn {
+      color: #311103;
+      background: linear-gradient(135deg, var(--flag), #ffd7c1);
+      box-shadow: 0 14px 28px rgba(255, 154, 98, 0.18);
+    }
+
+    .ghost-btn {
+      color: var(--ink);
+      background: rgba(18, 31, 54, 0.96);
+      border: 1px solid rgba(148, 182, 255, 0.18);
+    }
+
+    button:disabled {
+      cursor: default;
+      filter: grayscale(0.25) opacity(0.68);
+      transform: none;
+      box-shadow: none;
+    }
+
+    .status-strip {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .stat {
+      padding: 14px;
+    }
+
+    .stat strong {
+      display: block;
+      margin-top: 8px;
+      font-size: 24px;
+      line-height: 1;
+    }
+
+    .board-shell {
+      position: relative;
+    }
+
+    .board-wrap {
+      padding: 16px;
+      border-radius: 24px;
+      border: 1px solid rgba(148, 182, 255, 0.14);
+      background:
+        linear-gradient(180deg, rgba(15, 27, 49, 0.98), rgba(8, 15, 29, 0.98)),
+        linear-gradient(135deg, rgba(71, 214, 255, 0.06), rgba(255, 154, 98, 0.05));
+      overflow: auto;
+      transition: box-shadow 0.16s ease, transform 0.16s ease;
+    }
+
+    .board-wrap.board-blast {
+      animation: boardShake 0.46s ease;
+      box-shadow: 0 0 0 2px rgba(255, 95, 92, 0.32), 0 28px 56px rgba(255, 95, 92, 0.18);
+    }
+
+    .board,
+    .answer-board {
+      display: grid;
+      grid-template-columns: repeat(10, var(--cell-size));
+      gap: 7px;
+      width: fit-content;
+      min-width: 100%;
+      justify-content: center;
+    }
+
+    .cell,
+    .answer-cell {
+      position: relative;
+      width: var(--cell-size);
+      aspect-ratio: 1;
+      border-radius: 17px;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: pan-x pan-y;
+      -webkit-touch-callout: none;
+    }
+
+    .cell {
+      border: 2px solid rgba(148, 182, 255, 0.12);
+      background: linear-gradient(180deg, var(--unknown), var(--unknown-deep));
+      cursor: pointer;
+      box-shadow: inset 0 0 0 2px rgba(9, 17, 32, 0.8), 0 10px 18px rgba(0, 0, 0, 0.18);
+      transition: transform 0.12s ease, border-color 0.12s ease, background 0.18s ease, box-shadow 0.18s ease;
+      isolation: isolate;
+    }
+
+    .cell:hover {
+      transform: translateY(-1px);
+      border-color: rgba(148, 182, 255, 0.24);
+    }
+
+    .cell.locked { cursor: default; }
+
+    .cell::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.08), transparent 56%),
+        radial-gradient(circle at 28% 24%, rgba(255, 255, 255, 0.06), transparent 28%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .cell.safe {
+      border-color: rgba(114, 255, 209, 0.4);
+      box-shadow: inset 0 0 0 2px rgba(8, 51, 42, 0.24), 0 10px 20px rgba(114, 255, 209, 0.12);
+    }
+
+    .cell.flagged {
+      border-color: rgba(255, 154, 98, 0.46);
+      box-shadow: inset 0 0 0 2px rgba(86, 34, 9, 0.2), 0 10px 20px rgba(255, 154, 98, 0.16);
+    }
+
+    .cell.pending-mine {
+      border-color: rgba(255, 95, 92, 0.58);
+      box-shadow: inset 0 0 0 2px rgba(114, 15, 14, 0.24), 0 0 24px rgba(255, 95, 92, 0.24);
+    }
+
+    .cell.mine-hit {
+      border-color: rgba(255, 95, 92, 0.72);
+      background: radial-gradient(circle at center, rgba(255, 248, 240, 0.95) 0%, rgba(255, 129, 118, 0.9) 28%, rgba(126, 17, 17, 0.95) 100%);
+      box-shadow: inset 0 0 0 2px rgba(109, 17, 16, 0.25), 0 0 26px rgba(255, 95, 92, 0.38);
+    }
+
+    .cell.effect-safe,
+    .cell.effect-flag,
+    .cell.effect-undo,
+    .cell.effect-mine {
+      overflow: visible;
+    }
+
+    .number {
+      position: relative;
+      z-index: 2;
+      font-size: clamp(20px, 2.15vw, 29px);
+      font-weight: 900;
+      line-height: 1;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+    }
+
+    .num-0 { color: var(--num-0); }
+    .num-1 { color: var(--num-1); }
+    .num-2 { color: var(--num-2); }
+    .num-3 { color: var(--num-3); }
+    .num-4 { color: var(--num-4); }
+    .num-5 { color: var(--num-5); }
+    .num-6 { color: var(--num-6); }
+    .num-7 { color: var(--num-7); }
+    .num-8 { color: var(--num-8); }
+    .state-corner {
+      position: absolute;
+      right: 6px;
+      top: 6px;
+      z-index: 3;
+      width: 17px;
+      height: 17px;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(5, 12, 22, 0.48);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
+      pointer-events: none;
+    }
+
+    .state-corner.hidden {
+      display: none;
+    }
+
+    .state-corner.safe-corner {
+      background: rgba(7, 58, 46, 0.28);
+      border-color: rgba(114, 255, 209, 0.28);
+    }
+
+    .state-corner.flag-corner {
+      background: rgba(85, 30, 7, 0.24);
+      border-color: rgba(255, 154, 98, 0.32);
+    }
+
+    .safe-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: var(--safe);
+      box-shadow: 0 0 12px rgba(114, 255, 209, 0.6);
+    }
+
+    .flag-shape {
+      position: relative;
+      width: 8px;
+      height: 10px;
+    }
+
+    .flag-shape::before {
+      content: "";
+      position: absolute;
+      left: 1px;
+      top: 0;
+      width: 2px;
+      height: 10px;
+      background: rgba(52, 22, 8, 0.92);
+      border-radius: 999px;
+    }
+
+    .flag-shape::after {
+      content: "";
+      position: absolute;
+      left: 3px;
+      top: 1px;
+      width: 0;
+      height: 0;
+      border-top: 3.5px solid transparent;
+      border-bottom: 3.5px solid transparent;
+      border-left: 5.5px solid var(--flag);
+      filter: drop-shadow(0 0 4px rgba(255, 154, 98, 0.45));
+    }
+
+    .fx-layer {
+      position: absolute;
+      inset: -10%;
+      z-index: 1;
+      pointer-events: none;
+      opacity: 0;
+      border-radius: 20px;
+    }
+
+    .cell.effect-safe .fx-layer {
+      animation: safeFlash 0.24s ease;
+      background: radial-gradient(circle at center, rgba(114, 255, 209, 0.22) 0%, rgba(114, 255, 209, 0.08) 35%, transparent 70%);
+    }
+
+    .cell.effect-flag .fx-layer {
+      animation: flagFlash 0.24s ease;
+      background: radial-gradient(circle at 78% 24%, rgba(255, 176, 126, 0.34) 0%, rgba(255, 154, 98, 0.12) 30%, transparent 62%);
+    }
+
+    .cell.effect-undo .fx-layer {
+      animation: undoFlash 0.28s ease;
+      background: radial-gradient(circle at center, rgba(71, 214, 255, 0.18) 0%, rgba(71, 214, 255, 0.08) 32%, transparent 72%);
+    }
+
+    .cell.effect-mine .fx-layer,
+    .cell.pending-mine .fx-layer {
+      animation: mineFlash 0.42s ease;
+      background: radial-gradient(circle at center, rgba(255, 255, 255, 0.75) 0%, rgba(255, 123, 116, 0.46) 22%, rgba(255, 95, 92, 0.12) 48%, transparent 74%);
+    }
+
+    .legend {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .legend-card,
+    .card,
+    .loss-card {
+      padding: 16px;
+    }
+
+    .difficulty-name {
+      margin-top: 8px;
+      font-size: 28px;
+      line-height: 1;
+    }
+
+    .mini-stats {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .mini-block {
+      padding: 14px;
+      border-radius: 16px;
+      background: rgba(14, 27, 48, 0.92);
+      border: 1px solid rgba(148, 182, 255, 0.12);
+    }
+
+    .mini-block strong {
+      display: block;
+      margin-top: 8px;
+      font-size: 24px;
+    }
+
+    .tips {
+      margin-top: 14px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .loss-panel {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.18s ease;
+    }
+
+    .loss-panel.show {
+      pointer-events: auto;
+      opacity: 1;
+    }
+
+    .loss-panel::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 24px;
+      background: rgba(4, 10, 18, 0.56);
+      backdrop-filter: blur(5px);
+    }
+
+    .loss-card {
+      position: relative;
+      width: min(92%, 420px);
+      display: grid;
+      gap: 12px;
+      text-align: left;
+      border-color: rgba(255, 95, 92, 0.24);
+      z-index: 1;
+    }
+
+    .loss-card h3 {
+      font-size: 24px;
+      line-height: 1.1;
+    }
+
+    .loss-actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    .undo-note {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .answer-panel.hidden {
+      display: none;
+    }
+
+    .answer-board {
+      margin-top: 14px;
+      min-width: 0;
+      justify-content: start;
+      --cell-size: min(6vw, 36px);
+    }
+
+    .answer-cell {
+      background: linear-gradient(180deg, #11203a, #0b1527);
+      border: 1px solid rgba(148, 182, 255, 0.14);
+    }
+
+    .answer-cell.mine {
+      background: linear-gradient(180deg, #ffd7d2, #ff8f86);
+      border-color: rgba(255, 95, 92, 0.34);
+      color: #350807;
+    }
+
+    .answer-cell.wrong-flag {
+      background: linear-gradient(180deg, #fff0ca, #ffd66f);
+      border-color: rgba(255, 214, 111, 0.34);
+      color: #382301;
+    }
+
+    .footer-note {
+      margin-top: 10px;
+      font-size: 14px;
+    }
+
+    @keyframes safeFlash {
+      0% { opacity: 0; transform: scale(0.82); }
+      40% { opacity: 1; transform: scale(1.08); }
+      100% { opacity: 0; transform: scale(1.28); }
+    }
+
+    @keyframes flagFlash {
+      0% { opacity: 0; transform: scale(0.78) rotate(-8deg); }
+      42% { opacity: 1; transform: scale(1.05) rotate(0deg); }
+      100% { opacity: 0; transform: scale(1.22) rotate(5deg); }
+    }
+
+    @keyframes undoFlash {
+      0% { opacity: 0; transform: scale(0.84); }
+      38% { opacity: 1; transform: scale(1.04); }
+      100% { opacity: 0; transform: scale(1.22); }
+    }
+
+    @keyframes mineFlash {
+      0% { opacity: 0.1; transform: scale(0.66); }
+      28% { opacity: 1; transform: scale(1.02); }
+      100% { opacity: 0; transform: scale(1.42); }
+    }
+
+    @keyframes boardShake {
+      0%, 100% { transform: translateX(0); }
+      18% { transform: translateX(-7px); }
+      36% { transform: translateX(5px); }
+      54% { transform: translateX(-4px); }
+      72% { transform: translateX(3px); }
+    }
+
+    @media (max-width: 1080px) {
+      .layout { grid-template-columns: 1fr; }
+      .side-panel { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 760px) {
+      :root { --cell-size: min(9vw, 48px); }
+      .shell { padding: 16px 12px 26px; }
+      .play-panel { padding: 18px; }
+      .quick-guide,
+      .toolbar,
+      .status-strip,
+      .legend,
+      .side-panel,
+      .mini-stats,
+      .loss-actions { grid-template-columns: 1fr; }
+      .answer-board { --cell-size: min(8vw, 32px); }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="layout">
+      <section class="panel play-panel">
+        <div class="hero">
+          <span class="eyebrow">Version 0.3 - Single HTML</span>
+          <h1>静态扫雷</h1>
+          <p class="subhead">看数字，找出所有雷。</p>
+        </div>
+
+        <div class="quick-guide">
+          <div class="guide-card">
+            <span class="key-chip">玩法</span>
+            <p class="guide-copy">数字表示周围 8 格里的雷数。</p>
+          </div>
+          <div class="guide-card">
+            <span class="key-chip">确认安全</span>
+            <p class="guide-copy">点一下，表示这格不是雷。</p>
+          </div>
+          <div class="guide-card">
+            <span class="key-chip">标记雷</span>
+            <p class="guide-copy">右键或长按插旗。再点旗子可取消。</p>
+          </div>
+          <div class="guide-card">
+            <span class="key-chip">踩雷时</span>
+            <p class="guide-copy">可撤回这一步一次，或直接看答案。</p>
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <div class="field">
+            <label class="label" for="difficulty-select">难度</label>
+            <select id="difficulty-select"></select>
+          </div>
+          <button id="new-game-btn" type="button" class="primary-btn">新开一局</button>
+          <button id="shuffle-btn" type="button" class="secondary-btn">同难度换图</button>
+        </div>
+
+        <div class="status-strip">
+          <div class="stat">
+            <span class="label">局面</span>
+            <strong id="status-text">准备中</strong>
+          </div>
+          <div class="stat">
+            <span class="label">已确认安全</span>
+            <strong id="safe-progress">0 / 0</strong>
+          </div>
+          <div class="stat">
+            <span class="label">已插旗</span>
+            <strong id="flag-progress">0 / 0</strong>
+          </div>
+          <div class="stat">
+            <span class="label">撤回机会</span>
+            <strong id="undo-progress">1 / 1</strong>
+          </div>
+        </div>
+        <div class="board-shell">
+          <div id="board-wrap" class="board-wrap">
+            <div id="board" class="board" aria-label="扫雷棋盘"></div>
+          </div>
+
+          <div id="loss-panel" class="loss-panel" aria-live="polite">
+            <div class="loss-card">
+              <span class="label">危险</span>
+              <h3>踩到雷了</h3>
+              <p class="tiny">这一步先进入失败确认态。你可以撤回最近一次操作一次，或者直接认输并查看标准答案。</p>
+              <div class="loss-actions">
+                <button id="undo-btn" type="button" class="primary-btn">撤回最近一步</button>
+                <button id="give-up-btn" type="button" class="secondary-btn">认输并看答案</button>
+              </div>
+              <div id="undo-note" class="undo-note"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="legend">
+          <div class="legend-card">
+            <h3>数字永远是主角</h3>
+            <p>未判格不再放大字标签；已判安全和已标雷也都缩成角标。这样做题时视线永远先落在数字，而不是被状态文字打断。</p>
+          </div>
+          <div class="legend-card">
+            <h3>反馈更贴近扫雷</h3>
+            <p>确认安全时是冷色扫描闪光，插旗时是暖色火花，踩雷时会先白闪再爆红。动效会很短，不会拖慢解题节奏。</p>
+          </div>
+          <div class="legend-card">
+            <h3>手机也能玩</h3>
+            <p>这份仍然是单 HTML，本地双击可玩；手机浏览器里也能直接打开，单击确认安全，长按标雷。</p>
+          </div>
+        </div>
+      </section>
+
+      <aside class="side-panel">
+        <section class="card">
+          <span class="label">当前难度</span>
+          <h2 id="difficulty-name" class="difficulty-name">幼儿园级</h2>
+          <p id="difficulty-copy" class="difficulty-copy"></p>
+          <div class="mini-stats">
+            <div class="mini-block">
+              <span class="label">隐藏雷数</span>
+              <strong id="mine-count-text">0</strong>
+            </div>
+            <div class="mini-block">
+              <span class="label">变体编号</span>
+              <strong id="variant-text">A</strong>
+            </div>
+          </div>
+          <div class="tips">
+            <div id="touch-tip" class="tiny">桌面端左键确认安全、右键标雷；手机端单击确认安全，长按标雷。</div>
+            <div id="difficulty-note" class="tiny"></div>
+          </div>
+          <p class="footer-note">如果已经确认了很多安全格但还没通关，先检查是不是有漏旗或错旗。</p>
+        </section>
+
+        <section id="answer-panel" class="card answer-panel hidden">
+          <span class="label">标准答案</span>
+          <h2 id="answer-title" class="difficulty-name" style="font-size:24px;margin-top:8px;">本局答案</h2>
+          <div id="answer-board" class="answer-board" aria-label="标准答案"></div>
+          <p id="answer-caption" class="answer-caption"></p>
+        </section>
+      </aside>
+    </div>
+  </div>
+
+  <script>
+    const SIZE = 10;
+    const CELL_COUNT = SIZE * SIZE;
+    const VARIANT_LABELS = "ABCDEFGH".split("");
+
+    const LEVELS = {
+      kindergarten: {
+        name: "幼儿园级",
+        summary: "大面积的 0 和边角强提示会很快把局面打开，几乎属于读题就会做的热身图。",
+        note: "适合第一次体验这套规则，主要练习把 0、满值和边线提示串起来。",
+        board: "0000010000000101000000001000000000011010000000000000100000000000010100001100010000000010000000000000"
+      },
+      entry: {
+        name: "入门级",
+        summary: "明显格还很多，但已经开始出现需要来回对照两个局部区域的信息交叉。",
+        note: "比幼儿园级更像正式解题，适合熟悉已知数字全开的思考方式。",
+        board: "0000000100000100000000100011010010010000000000101000000010000101000010001001000000100000101010000000"
+      },
+      advanced: {
+        name: "进阶级",
+        summary: "中值数字增多，局部不能只看一眼，需要在几片区域之间反复核对。",
+        note: "开始出现更像长链的中盘推理，建议先抓住边缘，再回收内部空间。",
+        board: "0000001011000110000000000000011001010100011000010010000110100011001000000100010001010010000000011000"
+      },
+      expert: {
+        name: "专家级",
+        summary: "显然格明显减少，很多位置要等别处先落地，适合喜欢连续推演的人。",
+        note: "如果卡住，先重新统计错旗风险，再找能同时约束多条边的数字串。",
+        board: "1000100000010111100010100010000010101000000010010101000000100000101000100111011001100100100101001100"
+      },
+      top: {
+        name: "顶尖人类级",
+        summary: "几乎整盘都是中值数字，简单模式解不开，需要长段连锁逻辑才能稳定推进。",
+        note: "这是刻意做得很密的图，读法更接近静态逻辑题而不是普通扫雷残局。",
+        board: "1100000100010011000101100001111011011001010010000000101000001001000101000000110110000011110001010100"
+      }
+    };
+
+    const state = {
+      levelKey: "kindergarten",
+      board: [],
+      clues: [],
+      marks: [],
+      mineCount: 0,
+      safeTotal: 0,
+      variantIndex: 0,
+      result: "playing",
+      explodedIndex: -1,
+      pendingMineIndex: -1,
+      undoUsed: false,
+      flashIndex: -1,
+      flashType: "",
+      flashToken: 0,
+      boardBlast: false,
+      boardBlastToken: 0,
+      lastAction: null,
+      touch: {
+        timerId: 0,
+        index: -1,
+        longTriggered: false,
+        suppressClick: false,
+        startX: 0,
+        startY: 0,
+        moved: false,
+        suppressUntil: 0
+      }
+    };
+
+    let flashTimeoutId = 0;
+    let boardBlastTimeoutId = 0;
+
+    const refs = {
+      difficultySelect: document.getElementById("difficulty-select"),
+      newGameBtn: document.getElementById("new-game-btn"),
+      shuffleBtn: document.getElementById("shuffle-btn"),
+      boardWrap: document.getElementById("board-wrap"),
+      board: document.getElementById("board"),
+      lossPanel: document.getElementById("loss-panel"),
+      undoBtn: document.getElementById("undo-btn"),
+      giveUpBtn: document.getElementById("give-up-btn"),
+      undoNote: document.getElementById("undo-note"),
+      statusText: document.getElementById("status-text"),
+      safeProgress: document.getElementById("safe-progress"),
+      flagProgress: document.getElementById("flag-progress"),
+      undoProgress: document.getElementById("undo-progress"),
+      difficultyName: document.getElementById("difficulty-name"),
+      difficultyCopy: document.getElementById("difficulty-copy"),
+      difficultyNote: document.getElementById("difficulty-note"),
+      mineCountText: document.getElementById("mine-count-text"),
+      variantText: document.getElementById("variant-text"),
+      answerPanel: document.getElementById("answer-panel"),
+      answerBoard: document.getElementById("answer-board"),
+      answerTitle: document.getElementById("answer-title"),
+      answerCaption: document.getElementById("answer-caption"),
+      touchTip: document.getElementById("touch-tip")
+    };
+    function indexOf(row, col) {
+      return row * SIZE + col;
+    }
+
+    function coordsOf(index) {
+      return [Math.floor(index / SIZE), index % SIZE];
+    }
+
+    function neighborsOf(index) {
+      const [row, col] = coordsOf(index);
+      const list = [];
+      for (let dr = -1; dr <= 1; dr += 1) {
+        for (let dc = -1; dc <= 1; dc += 1) {
+          if (dr === 0 && dc === 0) continue;
+          const nextRow = row + dr;
+          const nextCol = col + dc;
+          if (nextRow >= 0 && nextRow < SIZE && nextCol >= 0 && nextCol < SIZE) {
+            list.push(indexOf(nextRow, nextCol));
+          }
+        }
+      }
+      return list;
+    }
+
+    function bitstringToArray(bitstring) {
+      return bitstring.split("").map((digit) => Number(digit));
+    }
+
+    function transformCoords(row, col, variantIndex) {
+      switch (variantIndex) {
+        case 0: return [row, col];
+        case 1: return [SIZE - 1 - col, row];
+        case 2: return [SIZE - 1 - row, SIZE - 1 - col];
+        case 3: return [col, SIZE - 1 - row];
+        case 4: return [row, SIZE - 1 - col];
+        case 5: return [SIZE - 1 - row, col];
+        case 6: return [col, row];
+        case 7: return [SIZE - 1 - col, SIZE - 1 - row];
+        default: return [row, col];
+      }
+    }
+
+    function buildVariant(baseBoard, variantIndex) {
+      const result = new Array(CELL_COUNT).fill(0);
+      for (let row = 0; row < SIZE; row += 1) {
+        for (let col = 0; col < SIZE; col += 1) {
+          const sourceIndex = indexOf(row, col);
+          const [targetRow, targetCol] = transformCoords(row, col, variantIndex);
+          result[indexOf(targetRow, targetCol)] = baseBoard[sourceIndex];
+        }
+      }
+      return result;
+    }
+
+    function buildVariantPool(levelKey) {
+      const base = bitstringToArray(LEVELS[levelKey].board);
+      const variants = [];
+      const seen = new Set();
+      for (let variantIndex = 0; variantIndex < 8; variantIndex += 1) {
+        const board = buildVariant(base, variantIndex);
+        const signature = board.join("");
+        if (!seen.has(signature)) {
+          seen.add(signature);
+          variants.push({ board, variantIndex });
+        }
+      }
+      return variants;
+    }
+
+    function sampleVariant(levelKey, reshuffleOnly) {
+      const variants = buildVariantPool(levelKey);
+      const previousSignature = state.board.join("");
+      const candidates = reshuffleOnly
+        ? variants.filter((variant) => variant.board.join("") !== previousSignature)
+        : variants;
+      const pool = candidates.length > 0 ? candidates : variants;
+      return pool[Math.floor(Math.random() * pool.length)];
+    }
+
+    function computeClues(board) {
+      return board.map((_, index) => neighborsOf(index).reduce((total, neighborIndex) => total + board[neighborIndex], 0));
+    }
+
+    function countSafeMarked() {
+      return state.marks.reduce((total, mark, index) => total + (mark === "safe" && state.board[index] === 0 ? 1 : 0), 0);
+    }
+
+    function countFlags() {
+      return state.marks.reduce((total, mark) => total + (mark === "flagged" ? 1 : 0), 0);
+    }
+
+    function countWrongFlags() {
+      return state.marks.reduce((total, mark, index) => total + (mark === "flagged" && state.board[index] === 0 ? 1 : 0), 0);
+    }
+
+    function allMinesFlaggedCorrectly() {
+      for (let index = 0; index < CELL_COUNT; index += 1) {
+        if (state.board[index] === 1 && state.marks[index] !== "flagged") return false;
+        if (state.board[index] === 0 && state.marks[index] === "flagged") return false;
+      }
+      return true;
+    }
+
+    function clearFlash() {
+      window.clearTimeout(flashTimeoutId);
+      state.flashIndex = -1;
+      state.flashType = "";
+      state.flashToken = 0;
+    }
+
+    function triggerCellFlash(index, type, duration = 260) {
+      clearFlash();
+      const token = Date.now();
+      state.flashIndex = index;
+      state.flashType = type;
+      state.flashToken = token;
+      flashTimeoutId = window.setTimeout(() => {
+        if (state.flashToken === token) {
+          state.flashIndex = -1;
+          state.flashType = "";
+          renderAll();
+        }
+      }, duration);
+    }
+
+    function triggerBoardBlast() {
+      window.clearTimeout(boardBlastTimeoutId);
+      const token = Date.now();
+      state.boardBlast = true;
+      state.boardBlastToken = token;
+      boardBlastTimeoutId = window.setTimeout(() => {
+        if (state.boardBlastToken === token) {
+          state.boardBlast = false;
+          renderAll();
+        }
+      }, 480);
+    }
+
+    function resetTouchState() {
+      window.clearTimeout(state.touch.timerId);
+      state.touch.timerId = 0;
+      state.touch.index = -1;
+      state.touch.longTriggered = false;
+      state.touch.moved = false;
+    }
+
+    function clearTransientState() {
+      clearFlash();
+      window.clearTimeout(boardBlastTimeoutId);
+      state.boardBlast = false;
+      state.boardBlastToken = 0;
+      resetTouchState();
+      state.touch.suppressClick = false;
+      state.touch.suppressUntil = 0;
+      state.pendingMineIndex = -1;
+      state.explodedIndex = -1;
+      state.lastAction = null;
+    }
+
+    function startGame(levelKey, reshuffleOnly = false) {
+      clearTransientState();
+      state.levelKey = levelKey;
+      const selected = sampleVariant(levelKey, reshuffleOnly);
+      state.board = selected.board;
+      state.clues = computeClues(selected.board);
+      state.marks = new Array(CELL_COUNT).fill("unknown");
+      state.mineCount = state.board.reduce((total, cell) => total + cell, 0);
+      state.safeTotal = CELL_COUNT - state.mineCount;
+      state.variantIndex = selected.variantIndex;
+      state.result = "playing";
+      state.undoUsed = false;
+      renderAll();
+    }
+
+    function checkWin() {
+      if (state.result !== "playing") return;
+      if (countSafeMarked() === state.safeTotal && allMinesFlaggedCorrectly()) {
+        state.result = "won";
+      }
+    }
+
+    function setPendingLoss(index) {
+      state.result = "pending_loss";
+      state.pendingMineIndex = index;
+      state.explodedIndex = index;
+      state.lastAction = { type: "mine-click", index };
+      triggerCellFlash(index, "mine", 420);
+      triggerBoardBlast();
+      if (navigator.vibrate) {
+        navigator.vibrate([18, 30, 36]);
+      }
+    }
+
+    function confirmSafe(index) {
+      if (state.result !== "playing") return;
+      if (state.marks[index] === "flagged" || state.marks[index] === "safe") return;
+      if (state.board[index] === 1) {
+        setPendingLoss(index);
+        renderAll();
+        return;
+      }
+      state.marks[index] = "safe";
+      state.lastAction = { type: "safe", index, from: "unknown", to: "safe" };
+      checkWin();
+      triggerCellFlash(index, "safe", 230);
+      renderAll();
+    }
+
+    function toggleFlag(index) {
+      if (state.result !== "playing") return;
+      if (state.marks[index] === "safe") return;
+      const previous = state.marks[index];
+      state.marks[index] = previous === "flagged" ? "unknown" : "flagged";
+      state.lastAction = { type: "flag", index, from: previous, to: state.marks[index] };
+      checkWin();
+      triggerCellFlash(index, "flag", 230);
+      renderAll();
+    }
+    function undoPendingLoss() {
+      if (state.result !== "pending_loss" || state.undoUsed) return;
+      const index = state.pendingMineIndex;
+      state.undoUsed = true;
+      state.result = "playing";
+      state.pendingMineIndex = -1;
+      state.explodedIndex = -1;
+      state.lastAction = { type: "undo", index };
+      triggerCellFlash(index, "undo", 260);
+      renderAll();
+    }
+
+    function giveUpAndReveal() {
+      if (state.result !== "pending_loss") return;
+      state.result = "lost";
+      renderAll();
+    }
+
+    function handleBoardAction(index, action) {
+      if (!Number.isInteger(index) || index < 0 || index >= CELL_COUNT) return;
+      if (action === "safe") {
+        confirmSafe(index);
+      } else {
+        toggleFlag(index);
+      }
+    }
+
+    function revealAnswerIfNeeded() {
+      const shouldShow = state.result === "won" || state.result === "lost";
+      refs.answerPanel.classList.toggle("hidden", !shouldShow);
+      if (!shouldShow) {
+        refs.answerBoard.innerHTML = "";
+        refs.answerCaption.textContent = "";
+        refs.answerTitle.textContent = "本局答案";
+        return;
+      }
+      refs.answerTitle.textContent = state.result === "won" ? "你已通关" : "标准答案";
+      refs.answerCaption.textContent = state.result === "won"
+        ? "本局所有安全格都已确认，所有雷都已正确标记。答案区保留给你复盘整张图。"
+        : "红色是正确雷位，黄色表示你误插的旗子。只有在你认输后，标准答案才会展开。";
+      refs.answerBoard.innerHTML = state.board.map((cell, index) => {
+        const wrongFlag = state.marks[index] === "flagged" && cell === 0;
+        const classes = ["answer-cell"];
+        if (cell === 1) classes.push("mine");
+        if (wrongFlag) classes.push("wrong-flag");
+        const content = cell === 1 ? "✹" : state.clues[index];
+        return `<div class="${classes.join(" ")}"><span class="number num-${state.clues[index]}">${content}</span></div>`;
+      }).join("");
+    }
+
+    function renderStatus() {
+      const level = LEVELS[state.levelKey];
+      const safeMarked = countSafeMarked();
+      const flags = countFlags();
+      refs.safeProgress.textContent = `${safeMarked} / ${state.safeTotal}`;
+      refs.flagProgress.textContent = `${flags} / ${state.mineCount}`;
+      refs.undoProgress.textContent = state.undoUsed ? "0 / 1" : "1 / 1";
+      refs.difficultyName.textContent = level.name;
+      refs.difficultyCopy.textContent = level.summary;
+      refs.difficultyNote.textContent = level.note;
+      refs.mineCountText.textContent = String(state.mineCount);
+      refs.variantText.textContent = VARIANT_LABELS[state.variantIndex] || "A";
+
+      if (state.result === "playing") {
+        refs.statusText.textContent = countWrongFlags() > 0 ? "继续排查" : "解题中";
+      } else if (state.result === "pending_loss") {
+        refs.statusText.textContent = "踩到雷了";
+      } else if (state.result === "won") {
+        refs.statusText.textContent = "已通关";
+      } else {
+        refs.statusText.textContent = "已认输";
+      }
+
+      refs.touchTip.textContent = "电脑右键插旗；手机长按插旗，轻点旗子可取消。";
+      refs.undoNote.textContent = state.undoUsed
+        ? "这局没有撤回机会了。"
+        : "踩雷后可撤回 1 次。";
+      refs.undoBtn.disabled = state.undoUsed;
+      refs.lossPanel.classList.toggle("show", state.result === "pending_loss");
+    }
+
+    function renderBoard() {
+      refs.boardWrap.classList.toggle("board-blast", state.boardBlast);
+      refs.board.innerHTML = state.board.map((cell, index) => {
+        const mark = state.marks[index];
+        const classes = ["cell", mark];
+        if (state.result === "won" || state.result === "lost") {
+          classes.push("locked");
+        }
+        if (state.result === "pending_loss" && index === state.pendingMineIndex) {
+          classes.push("pending-mine", "effect-mine");
+        }
+        if (state.result === "lost" && index === state.explodedIndex) {
+          classes.push("mine-hit", "effect-mine");
+        }
+        if (state.flashIndex === index && state.flashType === "safe") classes.push("effect-safe");
+        if (state.flashIndex === index && state.flashType === "flag") classes.push("effect-flag");
+        if (state.flashIndex === index && state.flashType === "undo") classes.push("effect-undo");
+
+        const isSafe = mark === "safe";
+        const isFlagged = mark === "flagged";
+        const cornerClass = isSafe ? "state-corner safe-corner" : isFlagged ? "state-corner flag-corner" : "state-corner hidden";
+        const cornerContent = isSafe ? '<span class="safe-dot"></span>' : isFlagged ? '<span class="flag-shape"></span>' : '';
+
+        return `
+          <button type="button" class="${classes.join(" ")}" data-index="${index}" aria-label="第 ${index + 1} 格，数字 ${state.clues[index]}">
+            <span class="fx-layer"></span>
+            <span class="number num-${state.clues[index]}">${state.clues[index]}</span>
+            <span class="${cornerClass}">${cornerContent}</span>
+          </button>
+        `;
+      }).join("");
+    }
+
+    function renderAll() {
+      renderStatus();
+      renderBoard();
+      revealAnswerIfNeeded();
+    }
+
+    refs.board.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-index]");
+      if (!button) return;
+      const index = Number(button.dataset.index);
+      if (state.touch.suppressClick || Date.now() < state.touch.suppressUntil) {
+        state.touch.suppressClick = false;
+        return;
+      }
+      if (state.result !== "playing") return;
+      if (state.marks[index] === "flagged") return;
+      handleBoardAction(index, "safe");
+    });
+    refs.board.addEventListener("contextmenu", (event) => {
+      const button = event.target.closest("[data-index]");
+      if (!button) return;
+      event.preventDefault();
+      const index = Number(button.dataset.index);
+      if (state.result !== "playing") return;
+      handleBoardAction(index, "flag");
+    });
+
+    refs.board.addEventListener("touchstart", (event) => {
+      if (event.touches.length !== 1) return;
+      const button = event.target.closest("[data-index]");
+      if (!button) return;
+      const touch = event.touches[0];
+      const index = Number(button.dataset.index);
+      resetTouchState();
+      state.touch.index = index;
+      state.touch.startX = touch.clientX;
+      state.touch.startY = touch.clientY;
+      state.touch.moved = false;
+      state.touch.timerId = window.setTimeout(() => {
+        state.touch.longTriggered = true;
+        state.touch.suppressClick = true;
+        state.touch.suppressUntil = Date.now() + 450;
+        if (state.result === "playing") {
+          handleBoardAction(index, "flag");
+          if (navigator.vibrate) navigator.vibrate(14);
+        }
+      }, 420);
+    }, { passive: true });
+
+    refs.board.addEventListener("touchmove", (event) => {
+      if (state.touch.index < 0 || event.touches.length !== 1) return;
+      const touch = event.touches[0];
+      const dx = touch.clientX - state.touch.startX;
+      const dy = touch.clientY - state.touch.startY;
+      if ((dx * dx) + (dy * dy) > 100) {
+        state.touch.moved = true;
+        window.clearTimeout(state.touch.timerId);
+        state.touch.timerId = 0;
+      }
+    }, { passive: true });
+
+    refs.board.addEventListener("touchend", (event) => {
+      const button = event.target.closest("[data-index]");
+      if (!button) {
+        resetTouchState();
+        return;
+      }
+      const index = Number(button.dataset.index);
+      const longTriggered = state.touch.longTriggered;
+      const moved = state.touch.moved;
+      window.clearTimeout(state.touch.timerId);
+      state.touch.timerId = 0;
+      state.touch.index = -1;
+      state.touch.longTriggered = false;
+      state.touch.moved = false;
+      if (moved || longTriggered) {
+        state.touch.suppressClick = true;
+        state.touch.suppressUntil = Date.now() + 450;
+        return;
+      }
+      if (state.result === "playing") {
+        state.touch.suppressClick = true;
+        state.touch.suppressUntil = Date.now() + 260;
+        if (state.marks[index] === "flagged") {
+          toggleFlag(index);
+        } else {
+          handleBoardAction(index, "safe");
+        }
+        window.setTimeout(() => { state.touch.suppressClick = false; }, 90);
+      }
+    });
+
+    refs.board.addEventListener("touchcancel", () => {
+      resetTouchState();
+      state.touch.suppressClick = true;
+      state.touch.suppressUntil = Date.now() + 180;
+    });
+
+    refs.undoBtn.addEventListener("click", () => {
+      undoPendingLoss();
+    });
+
+    refs.giveUpBtn.addEventListener("click", () => {
+      giveUpAndReveal();
+    });
+
+    refs.difficultySelect.addEventListener("change", (event) => {
+      startGame(event.target.value);
+    });
+
+    refs.newGameBtn.addEventListener("click", () => {
+      startGame(state.levelKey);
+    });
+
+    refs.shuffleBtn.addEventListener("click", () => {
+      startGame(state.levelKey, true);
+    });
+
+    function initDifficultyPicker() {
+      refs.difficultySelect.innerHTML = Object.entries(LEVELS).map(([key, level]) => `<option value="${key}">${level.name}</option>`).join("");
+      refs.difficultySelect.value = state.levelKey;
+    }
+
+    initDifficultyPicker();
+    startGame(state.levelKey);
+  </script>
+</body>
+</html>

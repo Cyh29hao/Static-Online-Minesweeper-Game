@@ -3,8 +3,8 @@ const CELL_COUNT = SIZE * SIZE;
 const VARIANT_LABELS = "ABCDEFGH".split("");
 const LOCAL_SCORE_KEY = "static-minesweeper-v04-scores";
 const SCORE_CONFIG = {
-  supabaseUrl: "",
-  anonKey: "",
+  supabaseUrl: "https://lsnynqzltxdodjnkbjyf.supabase.co",
+  anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxzbnlucXpsdHhkb2RqbmtianlmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NDQzMDUsImV4cCI6MjA4OTQyMDMwNX0.hLjB4DkI68DpQ_TzUKAHxHPhw3rVUPBO9E2peIulX0c",
   table: "minesweeper_scores"
 };
 

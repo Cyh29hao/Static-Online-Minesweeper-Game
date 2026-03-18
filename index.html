@@ -505,6 +505,99 @@
       gap: 10px;
     }
 
+
+    .board-wrap {
+      overscroll-behavior: contain;
+    }
+
+    .cell {
+      touch-action: manipulation;
+    }
+
+    .leaderboard-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .rank-row,
+    .rank-empty {
+      padding: 13px 14px;
+      border-radius: 16px;
+      background: rgba(14, 27, 48, 0.92);
+      border: 1px solid rgba(148, 182, 255, 0.12);
+    }
+
+    .rank-row {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .rank-badge {
+      width: 34px;
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      background: rgba(71, 214, 255, 0.12);
+      color: var(--accent);
+      font-weight: 900;
+    }
+
+    .rank-name {
+      font-weight: 900;
+      line-height: 1.2;
+      word-break: break-all;
+    }
+
+    .rank-meta,
+    .rank-empty,
+    .submit-panel .tiny {
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .rank-time {
+      font-size: 20px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .submit-panel {
+      display: grid;
+      gap: 10px;
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(148, 182, 255, 0.12);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .submit-form {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+    }
+
+    .name-input {
+      min-height: 50px;
+      width: 100%;
+      padding: 0 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(148, 182, 255, 0.22);
+      background: rgba(16, 29, 51, 0.96);
+      color: var(--ink);
+      outline: none;
+    }
+
+    .name-input:focus {
+      border-color: rgba(71, 214, 255, 0.54);
+      box-shadow: 0 0 0 3px rgba(71, 214, 255, 0.12);
+    }
     .loss-panel {
       position: absolute;
       inset: 0;
@@ -648,27 +741,27 @@
     <div class="layout">
       <section class="panel play-panel">
         <div class="hero">
-          <span class="eyebrow">Version 0.3 - Single HTML</span>
+          <span class="eyebrow">Version 0.4 - HTML + JS</span>
           <h1>静态扫雷</h1>
           <p class="subhead">看数字，找出所有雷。</p>
         </div>
 
         <div class="quick-guide">
           <div class="guide-card">
-            <span class="key-chip">玩法</span>
-            <p class="guide-copy">数字表示周围 8 格里的雷数。</p>
+            <span class="key-chip">??</span>
+            <p class="guide-copy">?????? 8 ???????????????????</p>
           </div>
           <div class="guide-card">
-            <span class="key-chip">确认安全</span>
-            <p class="guide-copy">点一下，表示这格不是雷。</p>
+            <span class="key-chip">??</span>
+            <p class="guide-copy">???????????????????????????</p>
           </div>
           <div class="guide-card">
-            <span class="key-chip">标记雷</span>
-            <p class="guide-copy">右键或长按插旗。再点旗子可取消。</p>
+            <span class="key-chip">??</span>
+            <p class="guide-copy">??????????????????????????</p>
           </div>
           <div class="guide-card">
-            <span class="key-chip">踩雷时</span>
-            <p class="guide-copy">可撤回这一步一次，或直接看答案。</p>
+            <span class="key-chip">???</span>
+            <p class="guide-copy">?????????????????????????????</p>
           </div>
         </div>
 
@@ -683,20 +776,20 @@
 
         <div class="status-strip">
           <div class="stat">
-            <span class="label">局面</span>
-            <strong id="status-text">准备中</strong>
+            <span class="label">??</span>
+            <strong id="status-text">???</strong>
           </div>
           <div class="stat">
-            <span class="label">已确认安全</span>
+            <span class="label">??</span>
+            <strong id="timer-text">00:00.0</strong>
+          </div>
+          <div class="stat">
+            <span class="label">?????</span>
             <strong id="safe-progress">0 / 0</strong>
           </div>
           <div class="stat">
-            <span class="label">已插旗</span>
+            <span class="label">???</span>
             <strong id="flag-progress">0 / 0</strong>
-          </div>
-          <div class="stat">
-            <span class="label">撤回机会</span>
-            <strong id="undo-progress">1 / 1</strong>
           </div>
         </div>
         <div class="board-shell">
@@ -736,24 +829,47 @@
 
       <aside class="side-panel">
         <section class="card">
-          <span class="label">当前难度</span>
-          <h2 id="difficulty-name" class="difficulty-name">幼儿园级</h2>
+          <span class="label">????</span>
+          <h2 id="difficulty-name" class="difficulty-name">????</h2>
           <p id="difficulty-copy" class="difficulty-copy"></p>
           <div class="mini-stats">
             <div class="mini-block">
-              <span class="label">隐藏雷数</span>
+              <span class="label">????</span>
               <strong id="mine-count-text">0</strong>
             </div>
             <div class="mini-block">
-              <span class="label">变体编号</span>
+              <span class="label">????</span>
               <strong id="variant-text">A</strong>
+            </div>
+            <div class="mini-block">
+              <span class="label">????</span>
+              <strong id="clear-count-text">--</strong>
+            </div>
+            <div class="mini-block">
+              <span class="label">????</span>
+              <strong id="fastest-text">--</strong>
             </div>
           </div>
           <div class="tips">
-            <div id="touch-tip" class="tiny">桌面端左键确认安全、右键标雷；手机端单击确认安全，长按标雷。</div>
+            <div id="touch-tip" class="tiny">???????????????????????????????????????</div>
             <div id="difficulty-note" class="tiny"></div>
           </div>
-          <p class="footer-note">如果已经确认了很多安全格但还没通关，先检查是不是有漏旗或错旗。</p>
+          <p class="footer-note">??????????????????????????</p>
+        </section>
+
+        <section class="card">
+          <span id="rank-mode" class="label">????</span>
+          <h2 class="difficulty-name" style="font-size:24px;margin-top:8px;">????</h2>
+          <div id="leaderboard-list" class="leaderboard-list"></div>
+          <div id="leaderboard-note" class="tiny">?????????</div>
+          <div id="submit-panel" class="submit-panel hidden">
+            <div id="submit-copy" class="tiny"></div>
+            <div class="submit-form">
+              <input id="username-input" class="name-input" type="text" maxlength="16" placeholder="??????">
+              <button id="submit-score-btn" type="button" class="primary-btn">????</button>
+            </div>
+            <div id="submit-status" class="tiny"></div>
+          </div>
         </section>
 
         <section id="answer-panel" class="card answer-panel hidden">
@@ -765,560 +881,6 @@
       </aside>
     </div>
   </div>
-
-  <script>
-    const SIZE = 10;
-    const CELL_COUNT = SIZE * SIZE;
-    const VARIANT_LABELS = "ABCDEFGH".split("");
-
-    const LEVELS = {
-      kindergarten: {
-        name: "幼儿园级",
-        summary: "大面积的 0 和边角强提示会很快把局面打开，几乎属于读题就会做的热身图。",
-        note: "适合第一次体验这套规则，主要练习把 0、满值和边线提示串起来。",
-        board: "0000010000000101000000001000000000011010000000000000100000000000010100001100010000000010000000000000"
-      },
-      entry: {
-        name: "入门级",
-        summary: "明显格还很多，但已经开始出现需要来回对照两个局部区域的信息交叉。",
-        note: "比幼儿园级更像正式解题，适合熟悉已知数字全开的思考方式。",
-        board: "0000000100000100000000100011010010010000000000101000000010000101000010001001000000100000101010000000"
-      },
-      advanced: {
-        name: "进阶级",
-        summary: "中值数字增多，局部不能只看一眼，需要在几片区域之间反复核对。",
-        note: "开始出现更像长链的中盘推理，建议先抓住边缘，再回收内部空间。",
-        board: "0000001011000110000000000000011001010100011000010010000110100011001000000100010001010010000000011000"
-      },
-      expert: {
-        name: "专家级",
-        summary: "显然格明显减少，很多位置要等别处先落地，适合喜欢连续推演的人。",
-        note: "如果卡住，先重新统计错旗风险，再找能同时约束多条边的数字串。",
-        board: "1000100000010111100010100010000010101000000010010101000000100000101000100111011001100100100101001100"
-      },
-      top: {
-        name: "顶尖人类级",
-        summary: "几乎整盘都是中值数字，简单模式解不开，需要长段连锁逻辑才能稳定推进。",
-        note: "这是刻意做得很密的图，读法更接近静态逻辑题而不是普通扫雷残局。",
-        board: "1100000100010011000101100001111011011001010010000000101000001001000101000000110110000011110001010100"
-      }
-    };
-
-    const state = {
-      levelKey: "kindergarten",
-      board: [],
-      clues: [],
-      marks: [],
-      mineCount: 0,
-      safeTotal: 0,
-      variantIndex: 0,
-      result: "playing",
-      explodedIndex: -1,
-      pendingMineIndex: -1,
-      undoUsed: false,
-      flashIndex: -1,
-      flashType: "",
-      flashToken: 0,
-      boardBlast: false,
-      boardBlastToken: 0,
-      lastAction: null,
-      touch: {
-        timerId: 0,
-        index: -1,
-        longTriggered: false,
-        suppressClick: false,
-        startX: 0,
-        startY: 0,
-        moved: false,
-        suppressUntil: 0
-      }
-    };
-
-    let flashTimeoutId = 0;
-    let boardBlastTimeoutId = 0;
-
-    const refs = {
-      difficultySelect: document.getElementById("difficulty-select"),
-      newGameBtn: document.getElementById("new-game-btn"),
-      shuffleBtn: document.getElementById("shuffle-btn"),
-      boardWrap: document.getElementById("board-wrap"),
-      board: document.getElementById("board"),
-      lossPanel: document.getElementById("loss-panel"),
-      undoBtn: document.getElementById("undo-btn"),
-      giveUpBtn: document.getElementById("give-up-btn"),
-      undoNote: document.getElementById("undo-note"),
-      statusText: document.getElementById("status-text"),
-      safeProgress: document.getElementById("safe-progress"),
-      flagProgress: document.getElementById("flag-progress"),
-      undoProgress: document.getElementById("undo-progress"),
-      difficultyName: document.getElementById("difficulty-name"),
-      difficultyCopy: document.getElementById("difficulty-copy"),
-      difficultyNote: document.getElementById("difficulty-note"),
-      mineCountText: document.getElementById("mine-count-text"),
-      variantText: document.getElementById("variant-text"),
-      answerPanel: document.getElementById("answer-panel"),
-      answerBoard: document.getElementById("answer-board"),
-      answerTitle: document.getElementById("answer-title"),
-      answerCaption: document.getElementById("answer-caption"),
-      touchTip: document.getElementById("touch-tip")
-    };
-    function indexOf(row, col) {
-      return row * SIZE + col;
-    }
-
-    function coordsOf(index) {
-      return [Math.floor(index / SIZE), index % SIZE];
-    }
-
-    function neighborsOf(index) {
-      const [row, col] = coordsOf(index);
-      const list = [];
-      for (let dr = -1; dr <= 1; dr += 1) {
-        for (let dc = -1; dc <= 1; dc += 1) {
-          if (dr === 0 && dc === 0) continue;
-          const nextRow = row + dr;
-          const nextCol = col + dc;
-          if (nextRow >= 0 && nextRow < SIZE && nextCol >= 0 && nextCol < SIZE) {
-            list.push(indexOf(nextRow, nextCol));
-          }
-        }
-      }
-      return list;
-    }
-
-    function bitstringToArray(bitstring) {
-      return bitstring.split("").map((digit) => Number(digit));
-    }
-
-    function transformCoords(row, col, variantIndex) {
-      switch (variantIndex) {
-        case 0: return [row, col];
-        case 1: return [SIZE - 1 - col, row];
-        case 2: return [SIZE - 1 - row, SIZE - 1 - col];
-        case 3: return [col, SIZE - 1 - row];
-        case 4: return [row, SIZE - 1 - col];
-        case 5: return [SIZE - 1 - row, col];
-        case 6: return [col, row];
-        case 7: return [SIZE - 1 - col, SIZE - 1 - row];
-        default: return [row, col];
-      }
-    }
-
-    function buildVariant(baseBoard, variantIndex) {
-      const result = new Array(CELL_COUNT).fill(0);
-      for (let row = 0; row < SIZE; row += 1) {
-        for (let col = 0; col < SIZE; col += 1) {
-          const sourceIndex = indexOf(row, col);
-          const [targetRow, targetCol] = transformCoords(row, col, variantIndex);
-          result[indexOf(targetRow, targetCol)] = baseBoard[sourceIndex];
-        }
-      }
-      return result;
-    }
-
-    function buildVariantPool(levelKey) {
-      const base = bitstringToArray(LEVELS[levelKey].board);
-      const variants = [];
-      const seen = new Set();
-      for (let variantIndex = 0; variantIndex < 8; variantIndex += 1) {
-        const board = buildVariant(base, variantIndex);
-        const signature = board.join("");
-        if (!seen.has(signature)) {
-          seen.add(signature);
-          variants.push({ board, variantIndex });
-        }
-      }
-      return variants;
-    }
-
-    function sampleVariant(levelKey, reshuffleOnly) {
-      const variants = buildVariantPool(levelKey);
-      const previousSignature = state.board.join("");
-      const candidates = reshuffleOnly
-        ? variants.filter((variant) => variant.board.join("") !== previousSignature)
-        : variants;
-      const pool = candidates.length > 0 ? candidates : variants;
-      return pool[Math.floor(Math.random() * pool.length)];
-    }
-
-    function computeClues(board) {
-      return board.map((_, index) => neighborsOf(index).reduce((total, neighborIndex) => total + board[neighborIndex], 0));
-    }
-
-    function countSafeMarked() {
-      return state.marks.reduce((total, mark, index) => total + (mark === "safe" && state.board[index] === 0 ? 1 : 0), 0);
-    }
-
-    function countFlags() {
-      return state.marks.reduce((total, mark) => total + (mark === "flagged" ? 1 : 0), 0);
-    }
-
-    function countWrongFlags() {
-      return state.marks.reduce((total, mark, index) => total + (mark === "flagged" && state.board[index] === 0 ? 1 : 0), 0);
-    }
-
-    function allMinesFlaggedCorrectly() {
-      for (let index = 0; index < CELL_COUNT; index += 1) {
-        if (state.board[index] === 1 && state.marks[index] !== "flagged") return false;
-        if (state.board[index] === 0 && state.marks[index] === "flagged") return false;
-      }
-      return true;
-    }
-
-    function clearFlash() {
-      window.clearTimeout(flashTimeoutId);
-      state.flashIndex = -1;
-      state.flashType = "";
-      state.flashToken = 0;
-    }
-
-    function triggerCellFlash(index, type, duration = 260) {
-      clearFlash();
-      const token = Date.now();
-      state.flashIndex = index;
-      state.flashType = type;
-      state.flashToken = token;
-      flashTimeoutId = window.setTimeout(() => {
-        if (state.flashToken === token) {
-          state.flashIndex = -1;
-          state.flashType = "";
-          renderAll();
-        }
-      }, duration);
-    }
-
-    function triggerBoardBlast() {
-      window.clearTimeout(boardBlastTimeoutId);
-      const token = Date.now();
-      state.boardBlast = true;
-      state.boardBlastToken = token;
-      boardBlastTimeoutId = window.setTimeout(() => {
-        if (state.boardBlastToken === token) {
-          state.boardBlast = false;
-          renderAll();
-        }
-      }, 480);
-    }
-
-    function resetTouchState() {
-      window.clearTimeout(state.touch.timerId);
-      state.touch.timerId = 0;
-      state.touch.index = -1;
-      state.touch.longTriggered = false;
-      state.touch.moved = false;
-    }
-
-    function clearTransientState() {
-      clearFlash();
-      window.clearTimeout(boardBlastTimeoutId);
-      state.boardBlast = false;
-      state.boardBlastToken = 0;
-      resetTouchState();
-      state.touch.suppressClick = false;
-      state.touch.suppressUntil = 0;
-      state.pendingMineIndex = -1;
-      state.explodedIndex = -1;
-      state.lastAction = null;
-    }
-
-    function startGame(levelKey, reshuffleOnly = false) {
-      clearTransientState();
-      state.levelKey = levelKey;
-      const selected = sampleVariant(levelKey, reshuffleOnly);
-      state.board = selected.board;
-      state.clues = computeClues(selected.board);
-      state.marks = new Array(CELL_COUNT).fill("unknown");
-      state.mineCount = state.board.reduce((total, cell) => total + cell, 0);
-      state.safeTotal = CELL_COUNT - state.mineCount;
-      state.variantIndex = selected.variantIndex;
-      state.result = "playing";
-      state.undoUsed = false;
-      renderAll();
-    }
-
-    function checkWin() {
-      if (state.result !== "playing") return;
-      if (countSafeMarked() === state.safeTotal && allMinesFlaggedCorrectly()) {
-        state.result = "won";
-      }
-    }
-
-    function setPendingLoss(index) {
-      state.result = "pending_loss";
-      state.pendingMineIndex = index;
-      state.explodedIndex = index;
-      state.lastAction = { type: "mine-click", index };
-      triggerCellFlash(index, "mine", 420);
-      triggerBoardBlast();
-      if (navigator.vibrate) {
-        navigator.vibrate([18, 30, 36]);
-      }
-    }
-
-    function confirmSafe(index) {
-      if (state.result !== "playing") return;
-      if (state.marks[index] === "flagged" || state.marks[index] === "safe") return;
-      if (state.board[index] === 1) {
-        setPendingLoss(index);
-        renderAll();
-        return;
-      }
-      state.marks[index] = "safe";
-      state.lastAction = { type: "safe", index, from: "unknown", to: "safe" };
-      checkWin();
-      triggerCellFlash(index, "safe", 230);
-      renderAll();
-    }
-
-    function toggleFlag(index) {
-      if (state.result !== "playing") return;
-      if (state.marks[index] === "safe") return;
-      const previous = state.marks[index];
-      state.marks[index] = previous === "flagged" ? "unknown" : "flagged";
-      state.lastAction = { type: "flag", index, from: previous, to: state.marks[index] };
-      checkWin();
-      triggerCellFlash(index, "flag", 230);
-      renderAll();
-    }
-    function undoPendingLoss() {
-      if (state.result !== "pending_loss" || state.undoUsed) return;
-      const index = state.pendingMineIndex;
-      state.undoUsed = true;
-      state.result = "playing";
-      state.pendingMineIndex = -1;
-      state.explodedIndex = -1;
-      state.lastAction = { type: "undo", index };
-      triggerCellFlash(index, "undo", 260);
-      renderAll();
-    }
-
-    function giveUpAndReveal() {
-      if (state.result !== "pending_loss") return;
-      state.result = "lost";
-      renderAll();
-    }
-
-    function handleBoardAction(index, action) {
-      if (!Number.isInteger(index) || index < 0 || index >= CELL_COUNT) return;
-      if (action === "safe") {
-        confirmSafe(index);
-      } else {
-        toggleFlag(index);
-      }
-    }
-
-    function revealAnswerIfNeeded() {
-      const shouldShow = state.result === "won" || state.result === "lost";
-      refs.answerPanel.classList.toggle("hidden", !shouldShow);
-      if (!shouldShow) {
-        refs.answerBoard.innerHTML = "";
-        refs.answerCaption.textContent = "";
-        refs.answerTitle.textContent = "本局答案";
-        return;
-      }
-      refs.answerTitle.textContent = state.result === "won" ? "你已通关" : "标准答案";
-      refs.answerCaption.textContent = state.result === "won"
-        ? "本局所有安全格都已确认，所有雷都已正确标记。答案区保留给你复盘整张图。"
-        : "红色是正确雷位，黄色表示你误插的旗子。只有在你认输后，标准答案才会展开。";
-      refs.answerBoard.innerHTML = state.board.map((cell, index) => {
-        const wrongFlag = state.marks[index] === "flagged" && cell === 0;
-        const classes = ["answer-cell"];
-        if (cell === 1) classes.push("mine");
-        if (wrongFlag) classes.push("wrong-flag");
-        const content = cell === 1 ? "✹" : state.clues[index];
-        return `<div class="${classes.join(" ")}"><span class="number num-${state.clues[index]}">${content}</span></div>`;
-      }).join("");
-    }
-
-    function renderStatus() {
-      const level = LEVELS[state.levelKey];
-      const safeMarked = countSafeMarked();
-      const flags = countFlags();
-      refs.safeProgress.textContent = `${safeMarked} / ${state.safeTotal}`;
-      refs.flagProgress.textContent = `${flags} / ${state.mineCount}`;
-      refs.undoProgress.textContent = state.undoUsed ? "0 / 1" : "1 / 1";
-      refs.difficultyName.textContent = level.name;
-      refs.difficultyCopy.textContent = level.summary;
-      refs.difficultyNote.textContent = level.note;
-      refs.mineCountText.textContent = String(state.mineCount);
-      refs.variantText.textContent = VARIANT_LABELS[state.variantIndex] || "A";
-
-      if (state.result === "playing") {
-        refs.statusText.textContent = countWrongFlags() > 0 ? "继续排查" : "解题中";
-      } else if (state.result === "pending_loss") {
-        refs.statusText.textContent = "踩到雷了";
-      } else if (state.result === "won") {
-        refs.statusText.textContent = "已通关";
-      } else {
-        refs.statusText.textContent = "已认输";
-      }
-
-      refs.touchTip.textContent = "电脑右键插旗；手机长按插旗，轻点旗子可取消。";
-      refs.undoNote.textContent = state.undoUsed
-        ? "这局没有撤回机会了。"
-        : "踩雷后可撤回 1 次。";
-      refs.undoBtn.disabled = state.undoUsed;
-      refs.lossPanel.classList.toggle("show", state.result === "pending_loss");
-    }
-
-    function renderBoard() {
-      refs.boardWrap.classList.toggle("board-blast", state.boardBlast);
-      refs.board.innerHTML = state.board.map((cell, index) => {
-        const mark = state.marks[index];
-        const classes = ["cell", mark];
-        if (state.result === "won" || state.result === "lost") {
-          classes.push("locked");
-        }
-        if (state.result === "pending_loss" && index === state.pendingMineIndex) {
-          classes.push("pending-mine", "effect-mine");
-        }
-        if (state.result === "lost" && index === state.explodedIndex) {
-          classes.push("mine-hit", "effect-mine");
-        }
-        if (state.flashIndex === index && state.flashType === "safe") classes.push("effect-safe");
-        if (state.flashIndex === index && state.flashType === "flag") classes.push("effect-flag");
-        if (state.flashIndex === index && state.flashType === "undo") classes.push("effect-undo");
-
-        const isSafe = mark === "safe";
-        const isFlagged = mark === "flagged";
-        const cornerClass = isSafe ? "state-corner safe-corner" : isFlagged ? "state-corner flag-corner" : "state-corner hidden";
-        const cornerContent = isSafe ? '<span class="safe-dot"></span>' : isFlagged ? '<span class="flag-shape"></span>' : '';
-
-        return `
-          <button type="button" class="${classes.join(" ")}" data-index="${index}" aria-label="第 ${index + 1} 格，数字 ${state.clues[index]}">
-            <span class="fx-layer"></span>
-            <span class="number num-${state.clues[index]}">${state.clues[index]}</span>
-            <span class="${cornerClass}">${cornerContent}</span>
-          </button>
-        `;
-      }).join("");
-    }
-
-    function renderAll() {
-      renderStatus();
-      renderBoard();
-      revealAnswerIfNeeded();
-    }
-
-    refs.board.addEventListener("click", (event) => {
-      const button = event.target.closest("[data-index]");
-      if (!button) return;
-      const index = Number(button.dataset.index);
-      if (state.touch.suppressClick || Date.now() < state.touch.suppressUntil) {
-        state.touch.suppressClick = false;
-        return;
-      }
-      if (state.result !== "playing") return;
-      if (state.marks[index] === "flagged") return;
-      handleBoardAction(index, "safe");
-    });
-    refs.board.addEventListener("contextmenu", (event) => {
-      const button = event.target.closest("[data-index]");
-      if (!button) return;
-      event.preventDefault();
-      const index = Number(button.dataset.index);
-      if (state.result !== "playing") return;
-      handleBoardAction(index, "flag");
-    });
-
-    refs.board.addEventListener("touchstart", (event) => {
-      if (event.touches.length !== 1) return;
-      const button = event.target.closest("[data-index]");
-      if (!button) return;
-      const touch = event.touches[0];
-      const index = Number(button.dataset.index);
-      resetTouchState();
-      state.touch.index = index;
-      state.touch.startX = touch.clientX;
-      state.touch.startY = touch.clientY;
-      state.touch.moved = false;
-      state.touch.timerId = window.setTimeout(() => {
-        state.touch.longTriggered = true;
-        state.touch.suppressClick = true;
-        state.touch.suppressUntil = Date.now() + 450;
-        if (state.result === "playing") {
-          handleBoardAction(index, "flag");
-          if (navigator.vibrate) navigator.vibrate(14);
-        }
-      }, 420);
-    }, { passive: true });
-
-    refs.board.addEventListener("touchmove", (event) => {
-      if (state.touch.index < 0 || event.touches.length !== 1) return;
-      const touch = event.touches[0];
-      const dx = touch.clientX - state.touch.startX;
-      const dy = touch.clientY - state.touch.startY;
-      if ((dx * dx) + (dy * dy) > 100) {
-        state.touch.moved = true;
-        window.clearTimeout(state.touch.timerId);
-        state.touch.timerId = 0;
-      }
-    }, { passive: true });
-
-    refs.board.addEventListener("touchend", (event) => {
-      const button = event.target.closest("[data-index]");
-      if (!button) {
-        resetTouchState();
-        return;
-      }
-      const index = Number(button.dataset.index);
-      const longTriggered = state.touch.longTriggered;
-      const moved = state.touch.moved;
-      window.clearTimeout(state.touch.timerId);
-      state.touch.timerId = 0;
-      state.touch.index = -1;
-      state.touch.longTriggered = false;
-      state.touch.moved = false;
-      if (moved || longTriggered) {
-        state.touch.suppressClick = true;
-        state.touch.suppressUntil = Date.now() + 450;
-        return;
-      }
-      if (state.result === "playing") {
-        state.touch.suppressClick = true;
-        state.touch.suppressUntil = Date.now() + 260;
-        if (state.marks[index] === "flagged") {
-          toggleFlag(index);
-        } else {
-          handleBoardAction(index, "safe");
-        }
-        window.setTimeout(() => { state.touch.suppressClick = false; }, 90);
-      }
-    });
-
-    refs.board.addEventListener("touchcancel", () => {
-      resetTouchState();
-      state.touch.suppressClick = true;
-      state.touch.suppressUntil = Date.now() + 180;
-    });
-
-    refs.undoBtn.addEventListener("click", () => {
-      undoPendingLoss();
-    });
-
-    refs.giveUpBtn.addEventListener("click", () => {
-      giveUpAndReveal();
-    });
-
-    refs.difficultySelect.addEventListener("change", (event) => {
-      startGame(event.target.value);
-    });
-
-    refs.newGameBtn.addEventListener("click", () => {
-      startGame(state.levelKey);
-    });
-
-    refs.shuffleBtn.addEventListener("click", () => {
-      startGame(state.levelKey, true);
-    });
-
-    function initDifficultyPicker() {
-      refs.difficultySelect.innerHTML = Object.entries(LEVELS).map(([key, level]) => `<option value="${key}">${level.name}</option>`).join("");
-      refs.difficultySelect.value = state.levelKey;
-    }
-
-    initDifficultyPicker();
-    startGame(state.levelKey);
-  </script>
+  <script src="app.js"></script>
 </body>
 </html>

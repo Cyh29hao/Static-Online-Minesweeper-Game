@@ -1,52 +1,91 @@
-﻿# 静态扫雷 Ver0.3
+﻿# 静态扫雷 Ver0.4
 
-一个可直接打开游玩的单文件扫雷网页。
+一个可本地打开、也可直接部署到 GitHub Pages 的静态扫雷网页。
 
 ## 本地使用
 
-1. 双击 `index.html`
-2. 用浏览器打开后直接开始玩
+1. 打开 `version0.4` 文件夹
+2. 双击 `index.html`
+3. 保持 `app.js` 和 `index.html` 在同一目录即可直接游玩
 
 ## 操作
 
-- 电脑：左键确认安全，右键插旗，再右键可取消旗子
-- 手机：轻点确认安全，长按插旗，轻点旗子可取消
+- 电脑：左键确认安全，右键插旗；对着旗子再右键一次可取消
+- 手机：轻点确认安全，长按插旗；松手后再长按旗子可取消
 - 踩雷后：可撤回这一步 1 次，或直接查看答案
 
-## 发布到 GitHub Pages
+## 排行榜
 
-最省事的做法：把 **version0.3 文件夹里的内容** 上传到仓库根目录，而不是把整个 `version0.3` 文件夹再套一层上传。
+Ver0.4 默认自带本机排行榜：
 
-### 方式 A：网页上传
+- 每张图分别统计通关人次、最快用时、前三名
+- 如果没有配置在线后端，成绩只保存在当前这台设备的浏览器里
 
-1. 在 GitHub 新建一个空仓库
-2. 把 `index.html`、`README.md`、`.nojekyll` 这 3 个文件上传到仓库根目录
-3. 打开仓库的 `Settings`
-4. 进入 `Pages`
-5. 在 `Build and deployment` 里选择 `Deploy from a branch`
-6. Branch 选 `main`，目录选 `/ (root)`
-7. 点 `Save`
-8. 等 1 到 2 分钟，打开页面给出的链接
+如果你想让 GitHub Pages 上的所有玩家共享同一份排行榜，需要额外配置 Supabase。
 
-### 方式 B：Git 命令上传
+### 1. 在 Supabase 建表
+
+把 [supabase-schema.sql](./supabase-schema.sql) 里的 SQL 复制到 Supabase 的 SQL Editor 执行。
+
+### 2. 打开匿名写入权限
+
+这个示例表是公开读、匿名写的轻量配置，适合小游戏排行榜。
+
+### 3. 填入 `app.js` 配置
+
+打开 [app.js](./app.js)，把最上面的 `SCORE_CONFIG` 改成你自己的值：
+
+```js
+const SCORE_CONFIG = {
+  supabaseUrl: "https://你的项目.supabase.co",
+  anonKey: "你的 anon key",
+  table: "minesweeper_scores"
+};
+```
+
+填好后重新上传文件，网页就会自动切到在线排行榜。
+
+## 用 Ver0.4 覆盖你现在的 GitHub Pages
+
+你当前链接是：
+
+```text
+https://cyh29hao.github.io/Static-Online-Minesweeper-Game/
+```
+
+要保持这个链接不变，只需要把仓库根目录里的旧版文件替换成 `version0.4` 里的新版文件。
+
+### 最省事的方法：网页替换
+
+1. 打开你的仓库 `Static-Online-Minesweeper-Game`
+2. 删除仓库根目录里的旧 `index.html`、旧 `README.md`、旧 `.nojekyll`
+3. 上传 `version0.4` 里的这 5 个文件到仓库根目录：
+   - `index.html`
+   - `app.js`
+   - `README.md`
+   - `.nojekyll`
+   - `supabase-schema.sql`
+4. 等 GitHub Pages 自动重新部署
+5. 1 到 2 分钟后刷新原链接
+
+### 用 Git 命令覆盖
+
+在 `version0.4` 目录里执行：
 
 ```bash
 git init
 git add .
-git commit -m "publish v0.3"
+git commit -m "publish v0.4"
 git branch -M main
-git remote add origin 你的仓库地址
-git push -u origin main
+git remote add origin https://github.com/cyh29hao/Static-Online-Minesweeper-Game.git
+git push -f origin main
 ```
 
-然后按上面的第 3 到第 8 步开启 Pages。
+如果你的仓库已经有内容，更稳的方式是直接在原仓库里把根目录文件替换后再提交，而不是新建仓库。
 
-## GitHub Pages 链接格式
+## GitHub Pages 注意事项
 
-开启成功后，链接一般是：
-
-```text
-https://你的用户名.github.io/你的仓库名/
-```
-
-只要仓库根目录里有 `index.html`，别人点开链接就能直接玩。
+- Pages 仍然选择 `main` 分支和 `/ (root)`
+- 仓库根目录必须有 `index.html`
+- `index.html` 和 `app.js` 必须放在同一层目录
+- 如果改了 `app.js` 里的排行榜配置，记得一起重新上传

@@ -49,6 +49,7 @@ const state = {
   mineCount: 0,
   safeTotal: 0,
   variantIndex: 0,
+  variantPool: [],
   result: "playing",
   explodedIndex: -1,
   pendingMineIndex: -1,
@@ -75,12 +76,15 @@ const state = {
   touch: {
     timerId: 0,
     index: -1,
+    mode: "none",
+    startMark: "unknown",
     longTriggered: false,
     suppressClick: false,
     startX: 0,
     startY: 0,
     moved: false,
-    suppressUntil: 0
+    suppressUntil: 0,
+    armedButton: null
   }
 };
 
@@ -89,6 +93,7 @@ let boardBlastTimeoutId = 0;
 
 const refs = {
   difficultySelect: document.getElementById("difficulty-select"),
+  puzzleSelect: document.getElementById("puzzle-select"),
   newGameBtn: document.getElementById("new-game-btn"),
   shuffleBtn: document.getElementById("shuffle-btn"),
   boardWrap: document.getElementById("board-wrap"),
@@ -120,16 +125,21 @@ const refs = {
   answerBoard: document.getElementById("answer-board"),
   answerTitle: document.getElementById("answer-title"),
   answerCaption: document.getElementById("answer-caption"),
-  touchTip: document.getElementById("touch-tip")
+  touchTip: document.getElementById("touch-tip"),
+  creditsCopy: document.getElementById("credits-copy"),
+  githubCopy: document.getElementById("github-copy")
 };
 
 function applyStaticCopy() {
-  document.title = "???? Ver0.4";
+  document.title = "静态扫雷 Ver0.4.1";
+  const eyebrow = document.querySelector(".eyebrow");
+  if (eyebrow) eyebrow.textContent = "Version 0.4.1 - HTML + JS";
+
   const guideData = [
     ["玩法", "数字表示周围 8 格里的雷数，整张图从开局就会全部显示。"],
     ["电脑", "左键确认安全，右键插旗；对着旗子再右键一次，就能取消。"],
-    ["手机", "轻点确认安全；长按插旗；松手后再长按旗子，就能取消。"],
-    ["踩雷时", "会先停在危险提示里。你可以撤回这一步一次，或者直接看答案。"]
+    ["手机", "轻点确认安全；长按未判格插旗；从旗子上重新长按，可稳定撤旗。"],
+    ["踩雷时", "可撤回一次。认输后只展示踩错点附近最多 5×5 的局部答案。"]
   ];
   document.querySelectorAll(".quick-guide .guide-card").forEach((card, index) => {
     const chip = card.querySelector(".key-chip");
@@ -138,6 +148,10 @@ function applyStaticCopy() {
     chip.textContent = guideData[index][0];
     copy.textContent = guideData[index][1];
   });
+
+  const toolbarLabels = document.querySelectorAll(".toolbar .field .label");
+  if (toolbarLabels[0]) toolbarLabels[0].textContent = "难度";
+  if (toolbarLabels[1]) toolbarLabels[1].textContent = "图号";
 
   const statLabels = ["局面", "用时", "已确认安全", "已插旗"];
   document.querySelectorAll(".status-strip .label").forEach((node, index) => {
@@ -154,22 +168,25 @@ function applyStaticCopy() {
       if (miniCopy[index]) node.textContent = miniCopy[index];
     });
     const footer = sideCards[0].querySelector(".footer-note");
-    if (footer) footer.textContent = "想提速时，先找必然安全格，再回头补旗子，通常会更稳。";
+    if (footer) footer.textContent = "支持指定图号对战，也支持随机换图练习。正式比拼时，建议先约定好难度和图号。";
   }
 
   if (sideCards[1]) {
     const heading = sideCards[1].querySelector("h2");
     if (heading) heading.textContent = "本图前三";
-    const note = document.getElementById("leaderboard-note");
-    if (note && !note.textContent.trim()) note.textContent = "通关后可留下名字。";
   }
 
+  refs.touchTip.textContent = "电脑：左键确认安全，右键插旗。手机：轻点确认安全；长按未判格插旗；从旗子上重新长按可撤旗。";
   refs.usernameInput.placeholder = "输入一个名字";
+  refs.creditsCopy.textContent = "Developed by Cyh29hao. 这是持续打磨中的开源逻辑题小游戏，欢迎试玩、反馈与理性转载。";
+  refs.githubCopy.textContent = "GitHub";
 
   const legendCards = document.querySelectorAll(".legend-card");
   if (legendCards[2]) {
+    const title = legendCards[2].querySelector("h3");
     const copy = legendCards[2].querySelector("p");
-    if (copy) copy.textContent = "这份可以直接打开游玩；电脑端和手机端都能直接进入棋盘。";
+    if (title) title.textContent = "竞技更方便";
+    if (copy) copy.textContent = "除了同难度随机换图，现在还能直接选具体图号，方便和别人打同一张图。";
   }
 }
 
@@ -242,14 +259,18 @@ function buildVariantPool(levelKey) {
   return variants;
 }
 
-function sampleVariant(levelKey, reshuffleOnly) {
+function selectVariant(levelKey, reshuffleOnly = false, preferredVariantIndex = null) {
   const variants = buildVariantPool(levelKey);
   const previousSignature = state.board.join("");
+  if (preferredVariantIndex != null) {
+    const exact = variants.find((variant) => variant.variantIndex === preferredVariantIndex);
+    return { variants, selected: exact || variants[0] };
+  }
   const candidates = reshuffleOnly
     ? variants.filter((variant) => variant.board.join("") !== previousSignature)
     : variants;
   const pool = candidates.length > 0 ? candidates : variants;
-  return pool[Math.floor(Math.random() * pool.length)];
+  return { variants, selected: pool[Math.floor(Math.random() * pool.length)] };
 }
 
 function computeClues(board) {
@@ -537,12 +558,22 @@ function triggerBoardBlast() {
   }, 480);
 }
 
+function clearTouchArming() {
+  if (state.touch.armedButton) {
+    state.touch.armedButton.classList.remove("touch-arming");
+    state.touch.armedButton = null;
+  }
+}
+
 function resetTouchState() {
   window.clearTimeout(state.touch.timerId);
   state.touch.timerId = 0;
   state.touch.index = -1;
+  state.touch.mode = "none";
+  state.touch.startMark = "unknown";
   state.touch.longTriggered = false;
   state.touch.moved = false;
+  clearTouchArming();
 }
 
 function clearTransientState() {
@@ -562,10 +593,19 @@ function clearTransientState() {
   resetTimer();
 }
 
-function startGame(levelKey, reshuffleOnly = false) {
+function syncPuzzlePicker() {
+  refs.puzzleSelect.innerHTML = state.variantPool.map((variant) => {
+    const label = VARIANT_LABELS[variant.variantIndex] || String(variant.variantIndex + 1);
+    return `<option value="${variant.variantIndex}">图 ${label}</option>`;
+  }).join("");
+  refs.puzzleSelect.value = String(state.variantIndex);
+}
+
+function startGame(levelKey, reshuffleOnly = false, preferredVariantIndex = null) {
   clearTransientState();
   state.levelKey = levelKey;
-  const selected = sampleVariant(levelKey, reshuffleOnly);
+  const { variants, selected } = selectVariant(levelKey, reshuffleOnly, preferredVariantIndex);
+  state.variantPool = variants;
   state.board = selected.board;
   state.clues = computeClues(selected.board);
   state.marks = new Array(CELL_COUNT).fill("unknown");
@@ -574,6 +614,7 @@ function startGame(levelKey, reshuffleOnly = false) {
   state.variantIndex = selected.variantIndex;
   state.result = "playing";
   state.undoUsed = false;
+  syncPuzzlePicker();
   renderAll();
   loadLeaderboard();
 }
@@ -612,15 +653,20 @@ function confirmSafe(index) {
   renderAll();
 }
 
-function toggleFlag(index) {
+function setFlagState(index, shouldFlag) {
   if (state.result !== "playing") return;
   if (state.marks[index] === "safe") return;
+  const nextMark = shouldFlag ? "flagged" : "unknown";
+  if (state.marks[index] === nextMark) return;
   ensureTimerStarted();
-  const previous = state.marks[index];
-  state.marks[index] = previous === "flagged" ? "unknown" : "flagged";
+  state.marks[index] = nextMark;
   checkWin();
   triggerCellFlash(index, "flag", 230);
   renderAll();
+}
+
+function toggleFlag(index) {
+  setFlagState(index, state.marks[index] !== "flagged");
 }
 
 function undoPendingLoss() {
@@ -641,13 +687,19 @@ function giveUpAndReveal() {
   renderAll();
 }
 
-function handleBoardAction(index, action) {
-  if (!Number.isInteger(index) || index < 0 || index >= CELL_COUNT) return;
-  if (action === "safe") {
-    confirmSafe(index);
-  } else {
-    toggleFlag(index);
-  }
+function getRevealWindow(index) {
+  const [row, col] = coordsOf(index);
+  return {
+    minRow: Math.max(0, row - 2),
+    maxRow: Math.min(SIZE - 1, row + 2),
+    minCol: Math.max(0, col - 2),
+    maxCol: Math.min(SIZE - 1, col + 2)
+  };
+}
+
+function isInRevealWindow(index, windowBox) {
+  const [row, col] = coordsOf(index);
+  return row >= windowBox.minRow && row <= windowBox.maxRow && col >= windowBox.minCol && col <= windowBox.maxCol;
 }
 
 function revealAnswerIfNeeded() {
@@ -659,18 +711,43 @@ function revealAnswerIfNeeded() {
     refs.answerTitle.textContent = "本局答案";
     return;
   }
+
   const elapsedLabel = formatElapsed(getElapsedMs());
-  refs.answerTitle.textContent = state.result === "won" ? "你已通关" : "标准答案";
-  refs.answerCaption.textContent = state.result === "won"
-    ? `用时 ${elapsedLabel}。本局所有安全格都已确认，所有雷都已正确标记。答案区保留给你复盘整张图。`
-    : `本局在 ${elapsedLabel} 后结束。红色是正确雷位，黄色表示你误插的旗子。`;
+  if (state.result === "won") {
+    refs.answerTitle.textContent = "你已通关";
+    refs.answerCaption.textContent = `用时 ${elapsedLabel}。本局所有安全格都已确认，所有雷都已正确标记。答案区保留给你复盘整张图。`;
+    refs.answerBoard.innerHTML = state.board.map((cell, index) => {
+      const wrongFlag = state.marks[index] === "flagged" && cell === 0;
+      const classes = ["answer-cell"];
+      if (cell === 1) classes.push("mine");
+      if (wrongFlag) classes.push("wrong-flag");
+      const content = cell === 1 ? "✹" : state.clues[index];
+      return `<div class="${classes.join(" ")}"><span class="number num-${state.clues[index]}">${content}</span></div>`;
+    }).join("");
+    return;
+  }
+
+  const windowBox = getRevealWindow(state.explodedIndex);
+  refs.answerTitle.textContent = "局部答案";
+  refs.answerCaption.textContent = `本局在 ${elapsedLabel} 后结束。为减少对排行榜的影响，只展示踩错点周围最多 5×5 的局部答案。`;
   refs.answerBoard.innerHTML = state.board.map((cell, index) => {
-    const wrongFlag = state.marks[index] === "flagged" && cell === 0;
+    const visible = isInRevealWindow(index, windowBox);
+    const wrongFlag = visible && state.marks[index] === "flagged" && cell === 0;
     const classes = ["answer-cell"];
-    if (cell === 1) classes.push("mine");
-    if (wrongFlag) classes.push("wrong-flag");
-    const content = cell === 1 ? "✹" : state.clues[index];
-    return `<div class="${classes.join(" ")}"><span class="number num-${state.clues[index]}">${content}</span></div>`;
+    let content = "·";
+    let numberClass = "num-0";
+    if (!visible) {
+      classes.push("masked");
+    } else if (cell === 1) {
+      classes.push("mine");
+      content = "✹";
+      numberClass = "num-8";
+    } else {
+      if (wrongFlag) classes.push("wrong-flag");
+      content = state.clues[index];
+      numberClass = `num-${state.clues[index]}`;
+    }
+    return `<div class="${classes.join(" ")}"><span class="number ${numberClass}">${content}</span></div>`;
   }).join("");
 }
 
@@ -726,7 +803,7 @@ function renderStatus() {
   refs.difficultyNote.textContent = level.note;
   refs.mineCountText.textContent = String(state.mineCount);
   refs.variantText.textContent = VARIANT_LABELS[state.variantIndex] || "A";
-  refs.touchTip.textContent = "电脑：左键确认安全，右键插旗。手机：轻点确认安全，长按插旗；再长按旗子可取消。";
+  refs.touchTip.textContent = "电脑：左键确认安全，右键插旗。手机：轻点确认安全；长按未判格插旗；从旗子上重新长按可撤旗。";
 
   if (state.result === "playing") {
     refs.statusText.textContent = countWrongFlags() > 0 ? "继续排查" : "解题中";
@@ -787,6 +864,10 @@ function renderAll() {
   revealAnswerIfNeeded();
 }
 
+function handleBoardClick(index) {
+  confirmSafe(index);
+}
+
 refs.board.addEventListener("click", (event) => {
   const button = event.target.closest("[data-index]");
   if (!button) return;
@@ -797,7 +878,7 @@ refs.board.addEventListener("click", (event) => {
   }
   if (state.result !== "playing") return;
   if (state.marks[index] === "flagged") return;
-  handleBoardAction(index, "safe");
+  handleBoardClick(index);
 });
 
 refs.board.addEventListener("contextmenu", (event) => {
@@ -806,7 +887,7 @@ refs.board.addEventListener("contextmenu", (event) => {
   event.preventDefault();
   const index = Number(button.dataset.index);
   if (state.result !== "playing") return;
-  handleBoardAction(index, "flag");
+  toggleFlag(index);
 });
 
 refs.board.addEventListener("touchstart", (event) => {
@@ -817,18 +898,33 @@ refs.board.addEventListener("touchstart", (event) => {
   const index = Number(button.dataset.index);
   resetTouchState();
   state.touch.index = index;
+  state.touch.startMark = state.marks[index];
+  state.touch.mode = state.marks[index] === "unknown"
+    ? "flag"
+    : state.marks[index] === "flagged"
+      ? "unflag"
+      : "ignore";
   state.touch.startX = touch.clientX;
   state.touch.startY = touch.clientY;
   state.touch.moved = false;
-  state.touch.timerId = window.setTimeout(() => {
-    state.touch.longTriggered = true;
-    state.touch.suppressClick = true;
-    state.touch.suppressUntil = Date.now() + 500;
-    if (state.result === "playing") {
-      toggleFlag(index);
-      if (navigator.vibrate) navigator.vibrate(14);
-    }
-  }, 340);
+  if (state.touch.mode !== "ignore") {
+    state.touch.armedButton = button;
+    button.classList.add("touch-arming");
+    state.touch.timerId = window.setTimeout(() => {
+      state.touch.longTriggered = true;
+      state.touch.suppressClick = true;
+      state.touch.suppressUntil = Date.now() + 650;
+      if (state.result === "playing") {
+        if (state.touch.mode === "flag") {
+          setFlagState(index, true);
+        } else if (state.touch.mode === "unflag") {
+          setFlagState(index, false);
+        }
+        if (navigator.vibrate) navigator.vibrate(14);
+      }
+      clearTouchArming();
+    }, 500);
+  }
 }, { passive: true });
 
 refs.board.addEventListener("touchmove", (event) => {
@@ -836,39 +932,42 @@ refs.board.addEventListener("touchmove", (event) => {
   const touch = event.touches[0];
   const dx = touch.clientX - state.touch.startX;
   const dy = touch.clientY - state.touch.startY;
-  if ((dx * dx) + (dy * dy) > 196) {
+  if ((dx * dx) + (dy * dy) > 324) {
     state.touch.moved = true;
     window.clearTimeout(state.touch.timerId);
     state.touch.timerId = 0;
+    clearTouchArming();
   }
 }, { passive: true });
 
 refs.board.addEventListener("touchend", (event) => {
   const button = event.target.closest("[data-index]");
-  if (!button) {
-    resetTouchState();
-    return;
-  }
-  const index = Number(button.dataset.index);
+  const index = button ? Number(button.dataset.index) : state.touch.index;
   const longTriggered = state.touch.longTriggered;
   const moved = state.touch.moved;
+  const startMark = state.touch.startMark;
   window.clearTimeout(state.touch.timerId);
   state.touch.timerId = 0;
+  clearTouchArming();
   state.touch.index = -1;
   state.touch.longTriggered = false;
   state.touch.moved = false;
+  state.touch.mode = "none";
+
   if (moved || longTriggered) {
     state.touch.suppressClick = true;
     state.touch.suppressUntil = Date.now() + 500;
     return;
   }
-  if (state.result === "playing") {
+
+  if (state.result === "playing" && startMark === "unknown" && Number.isInteger(index)) {
     state.touch.suppressClick = true;
     state.touch.suppressUntil = Date.now() + 320;
-    if (state.marks[index] !== "flagged") {
-      handleBoardAction(index, "safe");
-    }
+    handleBoardClick(index);
     window.setTimeout(() => { state.touch.suppressClick = false; }, 110);
+  } else {
+    state.touch.suppressClick = true;
+    state.touch.suppressUntil = Date.now() + 220;
   }
 });
 
@@ -876,6 +975,19 @@ refs.board.addEventListener("touchcancel", () => {
   resetTouchState();
   state.touch.suppressClick = true;
   state.touch.suppressUntil = Date.now() + 220;
+});
+
+refs.boardWrap.addEventListener("mousemove", (event) => {
+  const rect = refs.boardWrap.getBoundingClientRect();
+  const x = ((event.clientX - rect.left) / rect.width) * 100;
+  const y = ((event.clientY - rect.top) / rect.height) * 100;
+  refs.boardWrap.style.setProperty("--pointer-x", `${x}%`);
+  refs.boardWrap.style.setProperty("--pointer-y", `${y}%`);
+  refs.boardWrap.style.setProperty("--pointer-alpha", "1");
+});
+
+refs.boardWrap.addEventListener("mouseleave", () => {
+  refs.boardWrap.style.setProperty("--pointer-alpha", "0");
 });
 
 refs.undoBtn.addEventListener("click", () => {
@@ -890,8 +1002,12 @@ refs.difficultySelect.addEventListener("change", (event) => {
   startGame(event.target.value);
 });
 
+refs.puzzleSelect.addEventListener("change", (event) => {
+  startGame(state.levelKey, false, Number(event.target.value));
+});
+
 refs.newGameBtn.addEventListener("click", () => {
-  startGame(state.levelKey);
+  startGame(state.levelKey, false, state.variantIndex);
 });
 
 refs.shuffleBtn.addEventListener("click", () => {

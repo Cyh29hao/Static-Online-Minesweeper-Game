@@ -873,7 +873,7 @@ function renderStatus() {
   refs.touchTip.textContent = "电脑：左键确认安全，右键插旗。手机：轻点确认安全；长按未判格插旗；从旗子上重新长按可撤旗。";
 
   if (state.result === "playing") {
-    refs.statusText.textContent = countWrongFlags() > 0 ? "继续排查" : "解题中";
+    refs.statusText.textContent = "解题中";
   } else if (state.result === "pending_loss") {
     refs.statusText.textContent = "踩到雷了";
   } else if (state.result === "won") {

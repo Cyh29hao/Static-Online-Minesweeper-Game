@@ -7,6 +7,9 @@ const SCORE_CONFIG = {
   anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxzbnlucXpsdHhkb2RqbmtianlmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NDQzMDUsImV4cCI6MjA4OTQyMDMwNX0.hLjB4DkI68DpQ_TzUKAHxHPhw3rVUPBO9E2peIulX0c",
   table: "minesweeper_scores"
 };
+const PROJECT_NAME = "Static-Online-Minesweeper-Game";
+const VERSION_LABEL = "Ver 0.4.3";
+const RELEASE_LABEL = "\u53d1\u5e03\u4e8e 2026-03-19";
 
 const LEVELS = {
   kindergarten: {
@@ -116,6 +119,13 @@ const state = {
     submitted: false,
     submitting: false
   },
+  honors: {
+    mode: "local",
+    loading: false,
+    recentFirsts: [],
+    impossibleLeaders: [],
+    note: "\u70b9\u51fb\u9898\u540d\u53ef\u76f4\u63a5\u8df3\u5230\u5bf9\u5e94\u9898\u3002"
+  },
   touch: {
     timerId: 0,
     index: -1,
@@ -157,8 +167,19 @@ const refs = {
   clearCountText: document.getElementById("clear-count-text"),
   fastestText: document.getElementById("fastest-text"),
   rankMode: document.getElementById("rank-mode"),
+  currentRankTitle: document.getElementById("current-rank-title"),
   leaderboardList: document.getElementById("leaderboard-list"),
   leaderboardNote: document.getElementById("leaderboard-note"),
+  gloryLabel: document.getElementById("glory-label"),
+  gloryTitle: document.getElementById("glory-title"),
+  gloryNote: document.getElementById("glory-note"),
+  gloryList: document.getElementById("glory-list"),
+  gloryPanel: document.getElementById("glory-panel"),
+  impossibleHallLabel: document.getElementById("impossible-hall-label"),
+  impossibleHallTitle: document.getElementById("impossible-hall-title"),
+  impossibleHallNote: document.getElementById("impossible-hall-note"),
+  impossibleHallList: document.getElementById("impossible-hall-list"),
+  impossibleHallPanel: document.getElementById("impossible-hall-panel"),
   submitPanel: document.getElementById("submit-panel"),
   submitCopy: document.getElementById("submit-copy"),
   usernameInput: document.getElementById("username-input"),
@@ -170,13 +191,16 @@ const refs = {
   answerCaption: document.getElementById("answer-caption"),
   touchTip: document.getElementById("touch-tip"),
   creditsCopy: document.getElementById("credits-copy"),
+  projectNameTop: document.getElementById("project-name-top"),
+  projectNameBottom: document.getElementById("project-name-bottom"),
+  versionCopy: document.getElementById("version-copy"),
   githubCopy: document.getElementById("github-copy")
 };
 
 function applyStaticCopy() {
-  document.title = "静态扫雷 Ver0.4.2";
+  document.title = "静态扫雷 Ver0.4.3";
   const eyebrow = document.querySelector(".eyebrow");
-  if (eyebrow) eyebrow.textContent = "Version 0.4.2 - HTML + JS";
+  if (eyebrow) eyebrow.textContent = "Version 0.4.3 - HTML + JS";
 
   const guideData = [
     ["玩法", "数字表示周围 8 格里的雷数，整张图从开局就会全部显示。"],
@@ -194,7 +218,7 @@ function applyStaticCopy() {
 
   const toolbarLabels = document.querySelectorAll(".toolbar .field .label");
   if (toolbarLabels[0]) toolbarLabels[0].textContent = "难度";
-  if (toolbarLabels[1]) toolbarLabels[1].textContent = "\u56fe\u53f7 / \u8c31\u540d";
+  if (toolbarLabels[1]) toolbarLabels[1].textContent = "图号 / 谱名";
 
   const statLabels = ["局面", "用时", "已确认安全", "已插旗"];
   document.querySelectorAll(".status-strip .label").forEach((node, index) => {
@@ -206,12 +230,10 @@ function applyStaticCopy() {
     const labels = sideCards[0].querySelectorAll(".label");
     if (labels[0]) labels[0].textContent = "当前难度";
     const miniLabels = sideCards[0].querySelectorAll(".mini-block .label");
-    const miniCopy = ["\u9690\u85cf\u96f7\u6570", "\u56fe\u53f7 / \u9898\u540d", "\u901a\u5173\u4eba\u6b21", "\u6700\u5feb\u7528\u65f6"];
+    const miniCopy = ["隐藏雷数", "图号 / 题名", "通关人次", "最快用时"];
     miniLabels.forEach((node, index) => {
       if (miniCopy[index]) node.textContent = miniCopy[index];
     });
-    const footer = sideCards[0].querySelector(".footer-note");
-    if (footer) footer.textContent = "支持指定图号对战，也支持随机换图练习。正式比拼时，建议先约定好难度和图号。";
   }
 
   if (sideCards[1]) {
@@ -219,18 +241,29 @@ function applyStaticCopy() {
     if (heading) heading.textContent = "本图前三";
   }
 
-  refs.touchTip.textContent = "电脑：左键确认安全，右键插旗。手机：轻点确认安全；长按未判格插旗；从旗子上重新长按可撤旗。";
+  const legendData = [
+    ["关于", "这是一份把全部数字开局展示的静态扫雷。你要根据数字关系确认安全格、标出雷，并在唯一解里尽量少走弯路。"],
+    ["版本速递", "0.4.3 把挑战绝谱、在线榜单、同题跳转和移动端长按撤旗整合到一页里，同时继续压缩状态噪音，让读盘更清楚。"],
+    ["常见问题", "触屏端请尽量稳住手指再长按；GitHub 页面更新后若还是旧版，按 Ctrl+F5 强刷一次；如果还有异常，右下角邮箱可以直接联系我。"]
+  ];
+  document.querySelectorAll(".legend-card").forEach((card, index) => {
+    const title = card.querySelector("h3");
+    const copy = card.querySelector("p");
+    if (!title || !copy || !legendData[index]) return;
+    title.textContent = legendData[index][0];
+    copy.textContent = legendData[index][1];
+  });
+
+  if (refs.touchTip) refs.touchTip.textContent = "";
   refs.usernameInput.placeholder = "输入一个名字";
   refs.creditsCopy.textContent = "Developed by Cyh29hao. 这是持续打磨中的开源静态逻辑题项目，欢迎试玩、反馈与在注明来源的前提下理性分享。";
   refs.githubCopy.textContent = "GitHub";
-
-  const legendCards = document.querySelectorAll(".legend-card");
-  if (legendCards[2]) {
-    const title = legendCards[2].querySelector("h3");
-    const copy = legendCards[2].querySelector("p");
-    if (title) title.textContent = "竞技更方便";
-    if (copy) copy.textContent = "除了同难度随机换图，现在还能直接选具体图号，方便和别人打同一张图；新加的挑战不可能级也能直接约图对练。";
-  }
+  refs.currentRankTitle.textContent = "本图前三";
+  if (refs.gloryTitle) refs.gloryTitle.textContent = "妙手录";
+  if (refs.impossibleHallTitle) refs.impossibleHallTitle.textContent = "绝谱榜";
+  refs.projectNameTop.textContent = PROJECT_NAME;
+  refs.projectNameBottom.textContent = PROJECT_NAME;
+  refs.versionCopy.textContent = `${VERSION_LABEL} · ${RELEASE_LABEL}`;
 }
 
 function indexOf(row, col) {
@@ -339,6 +372,20 @@ function selectVariant(levelKey, reshuffleOnly = false, preferredVariantIndex = 
   const pool = candidates.length > 0 ? candidates : variants;
   return { variants, selected: pool[Math.floor(Math.random() * pool.length)] };
 }
+
+
+function buildPuzzleRegistry() {
+  const registry = new Map();
+  Object.keys(LEVELS).forEach((levelKey) => {
+    buildVariantPool(levelKey).forEach((variant) => {
+      registry.set(variant.key, { ...variant, levelKey });
+    });
+  });
+  return registry;
+}
+
+const PUZZLE_REGISTRY = buildPuzzleRegistry();
+const IMPOSSIBLE_PUZZLE_KEYS = buildVariantPool("impossible").map((variant) => variant.key);
 
 function computeClues(board) {
   return board.map((_, index) => neighborsOf(index).reduce((total, neighborIndex) => total + board[neighborIndex], 0));
@@ -460,6 +507,21 @@ function sortEntries(entries) {
   });
 }
 
+function sortByPlayedAt(entries, newestFirst = false) {
+  const ordered = [...entries].sort((left, right) => new Date(left.played_at).getTime() - new Date(right.played_at).getTime());
+  return newestFirst ? ordered.reverse() : ordered;
+}
+
+function normalizeScoreEntries(entries) {
+  return (entries || []).filter((entry) => entry && entry.puzzle_key && entry.username && entry.played_at).map((entry) => ({
+    puzzle_key: String(entry.puzzle_key),
+    puzzle_name: entry.puzzle_name || "",
+    username: String(entry.username).slice(0, 32),
+    elapsed_ms: Number(entry.elapsed_ms),
+    played_at: entry.played_at
+  })).filter((entry) => Number.isFinite(entry.elapsed_ms) && entry.elapsed_ms >= 0);
+}
+
 function summarizeEntries(entries, mode, note = "") {
   const ordered = sortEntries(entries);
   return {
@@ -468,76 +530,129 @@ function summarizeEntries(entries, mode, note = "") {
     count: ordered.length,
     fastestMs: ordered.length > 0 ? ordered[0].elapsed_ms : null,
     top: ordered.slice(0, 3),
-    note: note || (mode === "online" ? "通关后可留下名字。" : "现在显示的是这台设备上的成绩。"),
+    note: note || (mode === "online" ? "\u901a\u5173\u540e\u53ef\u7559\u4e0b\u540d\u5b57\u3002" : "\u73b0\u5728\u663e\u793a\u7684\u662f\u8fd9\u53f0\u8bbe\u5907\u4e0a\u7684\u6210\u7ee9\u3002"),
     submitMessage: state.leaderboard.submitMessage,
     submitted: state.leaderboard.submitted,
     submitting: false
   };
 }
 
-async function fetchRemoteSummary() {
+function buildCurrentSummary(allEntries, mode, note = "") {
+  const currentEntries = allEntries.filter((entry) => entry.puzzle_key === getPuzzleSignature());
+  return summarizeEntries(currentEntries, mode, note);
+}
+
+function getPuzzleMeta(puzzleKey) {
+  return PUZZLE_REGISTRY.get(puzzleKey) || null;
+}
+
+function getPuzzleDisplay(entry, shortOnly = false) {
+  const meta = getPuzzleMeta(entry.puzzle_key);
+  if (meta) {
+    if (shortOnly && meta.levelKey === "impossible") return meta.displayName;
+    return meta.rankName;
+  }
+  return entry.puzzle_name || entry.puzzle_key;
+}
+
+function computeRecentCrowns(entries) {
+  const bestByPuzzle = new Map();
+  const events = [];
+  for (const entry of sortByPlayedAt(entries)) {
+    const best = bestByPuzzle.get(entry.puzzle_key);
+    if (!best || entry.elapsed_ms < best.elapsed_ms) {
+      bestByPuzzle.set(entry.puzzle_key, entry);
+      events.push({ ...entry, displayTitle: getPuzzleDisplay(entry, false) });
+    }
+  }
+  return sortByPlayedAt(events, true).slice(0, 5);
+}
+
+function computeImpossibleLeaders(entries) {
+  return IMPOSSIBLE_PUZZLE_KEYS.map((puzzleKey) => {
+    const meta = getPuzzleMeta(puzzleKey);
+    const ordered = sortEntries(entries.filter((entry) => entry.puzzle_key === puzzleKey));
+    if (ordered.length > 0) {
+      return {
+        ...ordered[0],
+        displayTitle: meta?.displayName || ordered[0].puzzle_name || puzzleKey,
+        empty: false
+      };
+    }
+    return {
+      puzzle_key: puzzleKey,
+      puzzle_name: meta?.rankName || puzzleKey,
+      username: "\u865a\u4f4d\u4ee5\u5f85",
+      elapsed_ms: null,
+      played_at: "",
+      displayTitle: meta?.displayName || puzzleKey,
+      empty: true
+    };
+  });
+}
+
+function buildHonorState(entries, mode, note = "") {
+  return {
+    mode,
+    loading: false,
+    recentFirsts: computeRecentCrowns(entries),
+    impossibleLeaders: computeImpossibleLeaders(entries),
+    note: note || (mode === "online" ? "\u70b9\u51fb\u9898\u540d\u53ef\u76f4\u63a5\u8df3\u5230\u5bf9\u5e94\u9898\u3002" : "\u5f53\u524d\u663e\u793a\u7684\u662f\u8fd9\u53f0\u8bbe\u5907\u4e0a\u7684\u8363\u8000\u8bb0\u5f55\u3002")
+  };
+}
+
+async function fetchRemoteEntries() {
   const baseUrl = `${SCORE_CONFIG.supabaseUrl.replace(/\/$/, "")}/rest/v1/${SCORE_CONFIG.table}`;
   const headers = {
     apikey: SCORE_CONFIG.anonKey,
     Authorization: `Bearer ${SCORE_CONFIG.anonKey}`
   };
-  const key = getPuzzleSignature();
-  const topUrl = new URL(baseUrl);
-  topUrl.searchParams.set("select", "username,elapsed_ms,played_at");
-  topUrl.searchParams.set("puzzle_key", `eq.${key}`);
-  topUrl.searchParams.set("order", "elapsed_ms.asc,played_at.asc");
-  topUrl.searchParams.set("limit", "3");
-
-  const countUrl = new URL(baseUrl);
-  countUrl.searchParams.set("select", "id");
-  countUrl.searchParams.set("puzzle_key", `eq.${key}`);
-  countUrl.searchParams.set("limit", "1");
-
-  const [topResponse, countResponse] = await Promise.all([
-    fetch(topUrl, { headers }),
-    fetch(countUrl, { headers: { ...headers, Prefer: "count=exact" } })
-  ]);
-
-  if (!topResponse.ok || !countResponse.ok) {
+  const url = new URL(baseUrl);
+  url.searchParams.set("select", "puzzle_key,puzzle_name,username,elapsed_ms,played_at");
+  url.searchParams.set("order", "played_at.asc");
+  url.searchParams.set("limit", "5000");
+  const response = await fetch(url, { headers });
+  if (!response.ok) {
     throw new Error("remote leaderboard unavailable");
   }
-
-  const top = await topResponse.json();
-  const contentRange = countResponse.headers.get("content-range") || "0-0/0";
-  const countText = contentRange.includes("/") ? contentRange.split("/").pop() : "0";
-  const count = Number(countText) || 0;
-  return {
-    mode: "online",
-    loading: false,
-    count,
-    fastestMs: top.length > 0 ? top[0].elapsed_ms : null,
-    top,
-    note: "通关后可留下名字。",
-    submitMessage: state.leaderboard.submitMessage,
-    submitted: state.leaderboard.submitted,
-    submitting: false
-  };
+  return normalizeScoreEntries(await response.json());
 }
 
 async function loadLeaderboard() {
   state.leaderboard.loading = true;
-  state.leaderboard.note = hasOnlineRanking() ? "正在读取在线排行..." : "现在显示的是这台设备上的成绩。";
+  state.leaderboard.note = hasOnlineRanking() ? "\u6b63\u5728\u8bfb\u53d6\u5728\u7ebf\u6392\u884c..." : "\u73b0\u5728\u663e\u793a\u7684\u662f\u8fd9\u53f0\u8bbe\u5907\u4e0a\u7684\u6210\u7ee9\u3002";
+  state.honors.loading = true;
+  state.honors.note = hasOnlineRanking() ? "\u6b63\u5728\u6574\u7406\u5168\u7ad9\u8363\u8000\u8bb0\u5f55..." : "\u6b63\u5728\u6574\u7406\u8fd9\u53f0\u8bbe\u5907\u4e0a\u7684\u8363\u8000\u8bb0\u5f55...";
   renderLeaderboard();
+  renderHonorBoards();
   try {
+    let entries;
+    let mode;
+    let currentNote;
+    let honorNote;
     if (hasOnlineRanking()) {
-      state.leaderboard = { ...state.leaderboard, ...(await fetchRemoteSummary()) };
+      entries = await fetchRemoteEntries();
+      mode = "online";
+      currentNote = "\u901a\u5173\u540e\u53ef\u7559\u4e0b\u540d\u5b57\u3002";
+      honorNote = "\u70b9\u51fb\u9898\u540d\u53ef\u76f4\u63a5\u8df3\u5230\u5bf9\u5e94\u9898\u3002";
     } else {
-      const entries = readLocalScores().filter((entry) => entry.puzzle_key === getPuzzleSignature());
-      state.leaderboard = { ...state.leaderboard, ...summarizeEntries(entries, "local") };
+      entries = normalizeScoreEntries(readLocalScores());
+      mode = "local";
+      currentNote = "\u73b0\u5728\u663e\u793a\u7684\u662f\u8fd9\u53f0\u8bbe\u5907\u4e0a\u7684\u6210\u7ee9\u3002";
+      honorNote = "\u5f53\u524d\u663e\u793a\u7684\u662f\u8fd9\u53f0\u8bbe\u5907\u4e0a\u7684\u8363\u8000\u8bb0\u5f55\u3002";
     }
+    state.leaderboard = { ...state.leaderboard, ...buildCurrentSummary(entries, mode, currentNote) };
+    state.honors = buildHonorState(entries, mode, honorNote);
   } catch (error) {
-    const entries = readLocalScores().filter((entry) => entry.puzzle_key === getPuzzleSignature());
+    const entries = normalizeScoreEntries(readLocalScores());
     state.leaderboard = {
       ...state.leaderboard,
-      ...summarizeEntries(entries, "local", "在线排行暂时不可用，先显示这台设备上的成绩。")
+      ...buildCurrentSummary(entries, "local", "\u5728\u7ebf\u6392\u884c\u6682\u65f6\u4e0d\u53ef\u7528\uff0c\u5148\u663e\u793a\u8fd9\u53f0\u8bbe\u5907\u4e0a\u7684\u6210\u7ee9\u3002")
     };
+    state.honors = buildHonorState(entries, "local", "\u5728\u7ebf\u8363\u8000\u699c\u6682\u65f6\u4e0d\u53ef\u7528\uff0c\u5148\u663e\u793a\u8fd9\u53f0\u8bbe\u5907\u4e0a\u7684\u8bb0\u5f55\u3002");
   }
   renderLeaderboard();
+  renderHonorBoards();
   renderStatus();
 }
 
@@ -818,6 +933,66 @@ function revealAnswerIfNeeded() {
   }).join("");
 }
 
+
+function renderHonorBoards() {
+  const modeLabel = state.honors.mode === "online" ? "在线荣耀" : "本机荣耀";
+  const activeView = state.honors.view === "impossible" ? "impossible" : "glory";
+  if (refs.gloryLabel) refs.gloryLabel.textContent = modeLabel;
+
+  if (state.honors.loading) {
+    refs.gloryList.innerHTML = '<div class="rank-empty">正在整理最近的榜首改写记录...</div>';
+    refs.impossibleHallList.innerHTML = '<div class="rank-empty">正在整理五张绝谱的当前守关人...</div>';
+  } else {
+    if (!state.honors.recentFirsts.length) {
+      refs.gloryList.innerHTML = '<div class="rank-empty">还没有新的榜首诞生，下一次破纪录的名字会出现在这里。</div>';
+    } else {
+      refs.gloryList.innerHTML = state.honors.recentFirsts.map((entry, index) => `
+        <div class="rank-row">
+          <div class="rank-badge">${index + 1}</div>
+          <div>
+            <button type="button" class="puzzle-link rank-name" data-puzzle-key="${entry.puzzle_key}">${entry.displayTitle}</button>
+            <div class="rank-meta">${entry.username} · ${formatPlayedAt(entry.played_at)}</div>
+          </div>
+          <div class="rank-time">${formatElapsed(entry.elapsed_ms)}</div>
+        </div>
+      `).join("");
+    }
+
+    refs.impossibleHallList.innerHTML = state.honors.impossibleLeaders.map((entry, index) => {
+      const meta = entry.empty ? "尚无人破局" : `${entry.username} · ${formatPlayedAt(entry.played_at)}`;
+      const time = entry.elapsed_ms == null ? "--" : formatElapsed(entry.elapsed_ms);
+      return `
+        <div class="rank-row">
+          <div class="rank-badge">${index + 1}</div>
+          <div>
+            <button type="button" class="puzzle-link rank-name" data-puzzle-key="${entry.puzzle_key}">${entry.displayTitle}</button>
+            <div class="rank-meta">${meta}</div>
+          </div>
+          <div class="rank-time">${time}</div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  if (refs.gloryTitle) {
+    refs.gloryTitle.textContent = "妙手录";
+    refs.gloryTitle.classList.toggle("active", activeView === "glory");
+    refs.gloryTitle.setAttribute("aria-selected", String(activeView === "glory"));
+  }
+  if (refs.impossibleHallTitle) {
+    refs.impossibleHallTitle.textContent = "绝谱榜";
+    refs.impossibleHallTitle.classList.toggle("active", activeView === "impossible");
+    refs.impossibleHallTitle.setAttribute("aria-selected", String(activeView === "impossible"));
+  }
+  if (refs.gloryPanel) refs.gloryPanel.classList.toggle("hidden", activeView !== "glory");
+  if (refs.impossibleHallPanel) refs.impossibleHallPanel.classList.toggle("hidden", activeView !== "impossible");
+  if (refs.gloryNote) {
+    refs.gloryNote.textContent = activeView === "glory"
+      ? "最近五次改写榜首的时刻。点击题名可直接跳到对应题。"
+      : "五张挑战绝谱当前的守关人。点击谱名可直接切到对应题。";
+  }
+}
+
 function renderLeaderboard() {
   refs.rankMode.textContent = state.leaderboard.mode === "online" ? "在线排行" : "本机排行";
   refs.clearCountText.textContent = state.leaderboard.loading ? "..." : String(state.leaderboard.count);
@@ -928,12 +1103,25 @@ function renderAll() {
   renderStatus();
   renderBoard();
   renderLeaderboard();
+  renderHonorBoards();
   revealAnswerIfNeeded();
 }
 
 function handleBoardClick(index) {
   confirmSafe(index);
 }
+
+
+function jumpToPuzzle(puzzleKey) {
+  const meta = getPuzzleMeta(puzzleKey);
+  if (!meta) return;
+  startGame(meta.levelKey, false, meta.variantIndex);
+  window.requestAnimationFrame(() => {
+    const top = refs.boardWrap.getBoundingClientRect().top + window.scrollY - 18;
+    window.scrollTo({ top, behavior: "smooth" });
+  });
+}
+
 
 refs.board.addEventListener("click", (event) => {
   const button = event.target.closest("[data-index]");
@@ -1057,6 +1245,20 @@ refs.boardWrap.addEventListener("mouseleave", () => {
   refs.boardWrap.style.setProperty("--pointer-alpha", "0");
 });
 
+document.addEventListener("click", (event) => {
+  const honorTrigger = event.target.closest("[data-honor-view]");
+  if (honorTrigger) {
+    state.honors.view = honorTrigger.dataset.honorView === "impossible" ? "impossible" : "glory";
+    renderHonorBoards();
+    return;
+  }
+
+  const trigger = event.target.closest(".puzzle-link[data-puzzle-key]");
+  if (!trigger) return;
+  event.preventDefault();
+  jumpToPuzzle(trigger.dataset.puzzleKey);
+});
+
 refs.undoBtn.addEventListener("click", () => {
   undoPendingLoss();
 });
@@ -1100,5 +1302,6 @@ function initDifficultyPicker() {
 applyStaticCopy();
 initDifficultyPicker();
 startGame(state.levelKey);
+
 
 

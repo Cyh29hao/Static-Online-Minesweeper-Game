@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>静态扫雷 Ver0.4.2</title>
+  <title>静态扫雷 Ver0.4.3</title>
   <style>
     :root {
       --bg: radial-gradient(circle at top, rgba(61, 214, 255, 0.18), transparent 28%),
@@ -157,10 +157,19 @@
       text-shadow: 0 0 18px rgba(116, 221, 255, 0.16);
     }
 
+    .project-name {
+      color: rgba(214, 231, 255, 0.9);
+      font-size: 13px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      line-height: 1.3;
+    }
+
     .subhead {
       color: var(--muted);
       line-height: 1.65;
       max-width: 72ch;
+      font-size: 15px;
     }
 
     .quick-guide {
@@ -299,12 +308,12 @@
     }
 
     .board-wrap {
-      padding: 16px;
+      padding: 18px;
       border-radius: 24px;
-      border: 1px solid rgba(148, 182, 255, 0.14);
+      border: 1px solid rgba(148, 182, 255, 0.18);
       background:
-        linear-gradient(180deg, rgba(15, 27, 49, 0.98), rgba(8, 15, 29, 0.98)),
-        linear-gradient(135deg, rgba(71, 214, 255, 0.06), rgba(255, 154, 98, 0.05));
+        linear-gradient(180deg, rgba(16, 29, 52, 0.985), rgba(7, 14, 27, 0.98)),
+        linear-gradient(135deg, rgba(71, 214, 255, 0.07), rgba(255, 114, 104, 0.05));
       overflow: auto;
       transition: box-shadow 0.16s ease, transform 0.16s ease;
       overscroll-behavior: contain;
@@ -333,7 +342,7 @@
     .answer-board {
       display: grid;
       grid-template-columns: repeat(10, var(--cell-size));
-      gap: 7px;
+      gap: 9px;
       width: fit-content;
       min-width: 100%;
       justify-content: center;
@@ -355,18 +364,21 @@
     }
 
     .cell {
-      border: 2px solid rgba(148, 182, 255, 0.12);
-      background: linear-gradient(180deg, var(--unknown), var(--unknown-deep));
+      border: 2px solid rgba(166, 198, 255, 0.22);
+      background:
+        linear-gradient(180deg, rgba(27, 46, 77, 0.99), rgba(10, 19, 37, 0.99)),
+        radial-gradient(circle at 50% 16%, rgba(255, 255, 255, 0.055), transparent 34%),
+        linear-gradient(135deg, rgba(100, 132, 184, 0.06), transparent 55%);
       cursor: pointer;
-      box-shadow: inset 0 0 0 2px rgba(9, 17, 32, 0.8), 0 10px 18px rgba(0, 0, 0, 0.18);
+      box-shadow: inset 0 0 0 1px rgba(7, 14, 27, 0.95), inset 0 10px 18px rgba(255, 255, 255, 0.02), 0 13px 22px rgba(0, 0, 0, 0.24);
       transition: transform 0.12s ease, border-color 0.12s ease, background 0.18s ease, box-shadow 0.18s ease;
       isolation: isolate;
     }
 
     .cell:hover {
       transform: translateY(-1px);
-      border-color: rgba(148, 182, 255, 0.24);
-      box-shadow: inset 0 0 0 2px rgba(9, 17, 32, 0.8), 0 0 0 1px rgba(125, 211, 255, 0.14), 0 10px 18px rgba(0, 0, 0, 0.18);
+      border-color: rgba(166, 205, 255, 0.42);
+      box-shadow: inset 0 0 0 1px rgba(7, 14, 27, 0.96), 0 0 0 1px rgba(125, 211, 255, 0.24), 0 16px 26px rgba(0, 0, 0, 0.24);
     }
 
     .cell.locked { cursor: default; }
@@ -383,13 +395,20 @@
     }
 
     .cell.safe {
-      border-color: rgba(114, 255, 209, 0.4);
-      box-shadow: inset 0 0 0 2px rgba(8, 51, 42, 0.24), 0 10px 20px rgba(114, 255, 209, 0.12);
+      border-color: rgba(114, 255, 209, 0.62);
+      background:
+        linear-gradient(180deg, rgba(21, 46, 54, 0.98), rgba(10, 25, 32, 0.98)),
+        radial-gradient(circle at 50% 16%, rgba(114, 255, 209, 0.08), transparent 36%);
+      box-shadow: inset 0 0 0 1px rgba(7, 46, 38, 0.42), 0 10px 20px rgba(114, 255, 209, 0.14);
     }
 
     .cell.flagged {
-      border-color: rgba(255, 114, 104, 0.52);
-      box-shadow: inset 0 0 0 2px rgba(98, 24, 20, 0.22), 0 10px 20px rgba(255, 114, 104, 0.18);
+      border-color: rgba(255, 94, 92, 0.76);
+      background:
+        linear-gradient(180deg, rgba(72, 28, 32, 0.99), rgba(28, 10, 16, 0.99)),
+        radial-gradient(circle at 50% 18%, rgba(255, 94, 92, 0.13), transparent 40%),
+        linear-gradient(135deg, rgba(255, 140, 132, 0.06), transparent 55%);
+      box-shadow: inset 0 0 0 1px rgba(106, 20, 18, 0.52), 0 11px 20px rgba(255, 94, 92, 0.22);
     }
 
     .cell.pending-mine {
@@ -424,10 +443,11 @@
     .number {
       position: relative;
       z-index: 2;
-      font-size: clamp(20px, 2.15vw, 29px);
+      font-size: clamp(24px, 2.4vw, 32px);
       font-weight: 900;
       line-height: 1;
-      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+      letter-spacing: 0.01em;
+      text-shadow: 0 1px 2px rgba(4, 9, 18, 0.82), 0 0 12px rgba(0, 0, 0, 0.14);
     }
 
     .num-0 { color: var(--num-0); }
@@ -444,14 +464,14 @@
       right: 6px;
       top: 6px;
       z-index: 3;
-      width: 17px;
-      height: 17px;
+      width: 18px;
+      height: 18px;
       display: grid;
       place-items: center;
       border-radius: 999px;
       border: 1px solid rgba(255, 255, 255, 0.1);
-      background: rgba(5, 12, 22, 0.48);
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
+      background: rgba(6, 13, 24, 0.64);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.22);
       pointer-events: none;
     }
 
@@ -470,8 +490,8 @@
     }
 
     .safe-dot {
-      width: 7px;
-      height: 7px;
+      width: 6px;
+      height: 6px;
       border-radius: 999px;
       background: var(--safe);
       box-shadow: 0 0 12px rgba(114, 255, 209, 0.6);
@@ -503,7 +523,7 @@
       height: 0;
       border-top: 3.5px solid transparent;
       border-bottom: 3.5px solid transparent;
-      border-left: 5.5px solid var(--flag);
+      border-left: 5.5px solid #ff5f5c;
       filter: drop-shadow(0 0 4px rgba(255, 114, 104, 0.48));
     }
 
@@ -535,6 +555,84 @@
     .cell.pending-mine .fx-layer {
       animation: mineFlash 0.42s ease;
       background: radial-gradient(circle at center, rgba(255, 255, 255, 0.75) 0%, rgba(255, 123, 116, 0.46) 22%, rgba(255, 95, 92, 0.12) 48%, transparent 74%);
+    }
+
+    .cell.unknown .number {
+      opacity: 0.98;
+    }
+
+    .cell.safe .number {
+      transform: translateY(1px);
+    }
+
+    .cell.flagged .number {
+      color: rgba(245, 248, 255, 0.98);
+    }
+
+    .honor-card .leaderboard-list {
+      gap: 9px;
+    }
+
+    .honor-tabs-card {
+      display: grid;
+      gap: 12px;
+    }
+
+    .honor-switch {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    .honor-tab {
+      min-height: 46px;
+      padding: 0 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(148, 182, 255, 0.16);
+      background: rgba(13, 25, 44, 0.92);
+      color: var(--muted);
+      font-weight: 900;
+      letter-spacing: 0.01em;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    }
+
+    .honor-tab:hover {
+      border-color: rgba(148, 182, 255, 0.3);
+      filter: brightness(1.02);
+    }
+
+    .honor-tab.active {
+      border-color: rgba(118, 220, 255, 0.34);
+      background: linear-gradient(180deg, rgba(24, 46, 76, 0.98), rgba(11, 23, 42, 0.98));
+      color: var(--ink);
+      box-shadow: 0 12px 22px rgba(7, 14, 28, 0.18), inset 0 0 0 1px rgba(118, 220, 255, 0.08);
+    }
+
+    .honor-panel.hidden {
+      display: none;
+    }
+
+    .honor-tabs-card .leaderboard-list {
+      margin-top: 0;
+    }
+
+    .rank-row:hover {
+      border-color: rgba(122, 186, 255, 0.24);
+      background: rgba(16, 31, 54, 0.98);
+    }
+
+    .rank-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .rank-time {
+      min-width: 72px;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
     }
 
     .legend {
@@ -579,7 +677,11 @@
     .tips {
       margin-top: 14px;
       display: grid;
-      gap: 10px;
+      gap: 8px;
+    }
+
+    #touch-tip {
+      display: none;
     }
 
 
@@ -625,8 +727,33 @@
 
     .rank-name {
       font-weight: 900;
-      line-height: 1.2;
-      word-break: break-all;
+      line-height: 1.22;
+      word-break: break-word;
+    }
+
+    .puzzle-link {
+      padding: 0;
+      border: none;
+      min-height: 0;
+      background: none;
+      color: var(--ink);
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+      font-weight: 900;
+      box-shadow: none;
+    }
+
+    .puzzle-link:hover {
+      transform: none;
+      filter: none;
+      color: var(--accent);
+    }
+
+    .honor-note {
+      margin-top: 8px;
+      color: var(--muted);
+      line-height: 1.55;
     }
 
     .rank-meta,
@@ -763,39 +890,76 @@
     }
 
     .footer-note {
+      display: none;
       margin-top: 10px;
       font-size: 14px;
     }
 
     .credits {
-      margin-top: 16px;
-      padding: 10px 6px 0;
+      margin-top: 18px;
+      padding: 12px 6px 0;
       color: rgba(149, 174, 202, 0.78);
       font-size: 12px;
       line-height: 1.6;
       display: flex;
-      align-items: center;
+      align-items: flex-end;
       justify-content: space-between;
-      gap: 12px;
+      gap: 14px;
       flex-wrap: wrap;
     }
 
-    .credits a {
+    .credits-copywrap {
+      display: grid;
+      gap: 2px;
+      min-width: min(100%, 520px);
+    }
+
+    .credits-project {
+      color: rgba(222, 235, 255, 0.86);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 11px;
+    }
+
+    .credits-version {
+      color: rgba(149, 174, 202, 0.72);
+    }
+
+    .credits-links {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
+    }
+
+    .icon-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 182, 255, 0.14);
       color: rgba(218, 233, 255, 0.88);
       text-decoration: none;
+      background: rgba(13, 25, 44, 0.92);
+      transition: transform 0.14s ease, border-color 0.14s ease, color 0.14s ease;
     }
 
-    .credits a:hover {
+    .icon-link:hover {
       color: #ffffff;
+      border-color: rgba(125, 211, 255, 0.28);
+      transform: translateY(-1px);
     }
 
-    .github-badge {
+    .github-badge,
+    .mail-badge {
       width: 18px;
       height: 18px;
       display: inline-block;
+    }
+
+    .footer-link-text {
+      display: none;
     }
 
     @keyframes safeFlash {
@@ -859,6 +1023,7 @@
       .mini-stats,
       .loss-actions { grid-template-columns: 1fr; }
       .answer-board { --cell-size: min(8vw, 32px); }
+      .credits { align-items: flex-start; }
     }
   </style>
 </head>
@@ -867,27 +1032,28 @@
     <div class="layout">
       <section class="panel play-panel">
         <div class="hero">
-          <span class="eyebrow">Version 0.4 - HTML + JS</span>
+          <span class="eyebrow">Version 0.4.3 - HTML + JS</span>
           <h1><a class="title-link" href="https://cyh29hao.github.io/Static-Online-Minesweeper-Game/">静态扫雷</a></h1>
+          <p id="project-name-top" class="project-name">Static-Online-Minesweeper-Game</p>
           <p class="subhead">看数字，找出所有雷。</p>
         </div>
 
         <div class="quick-guide">
           <div class="guide-card">
-            <span class="key-chip">??</span>
-            <p class="guide-copy">?????? 8 ???????????????????</p>
+            <span class="key-chip">玩法</span>
+            <p class="guide-copy">数字表示周围 8 格里的雷数，整张图从开局就会全部显示。</p>
           </div>
           <div class="guide-card">
-            <span class="key-chip">??</span>
-            <p class="guide-copy">???????????????????????????</p>
+            <span class="key-chip">电脑</span>
+            <p class="guide-copy">电脑端左键确认安全，右键插旗；对着旗子再右键一次，就能取消。</p>
           </div>
           <div class="guide-card">
-            <span class="key-chip">??</span>
-            <p class="guide-copy">??????????????????????????</p>
+            <span class="key-chip">手机</span>
+            <p class="guide-copy">手机端轻点确认安全；长按未判格插旗；从旗子上重新长按，可稳定撤旗。</p>
           </div>
           <div class="guide-card">
-            <span class="key-chip">???</span>
-            <p class="guide-copy">?????????????????????????????</p>
+            <span class="key-chip">踩雷时</span>
+            <p class="guide-copy">可撤回一次。认输后只展示踩错点附近最多 5×5 的局部答案。</p>
           </div>
         </div>
 
@@ -897,7 +1063,7 @@
             <select id="difficulty-select"></select>
           </div>
           <div class="field">
-            <label class="label" for="puzzle-select">Map</label>
+            <label class="label" for="puzzle-select">图号 / 谱名</label>
             <select id="puzzle-select"></select>
           </div>
           <button id="new-game-btn" type="button" class="primary-btn">新开一局</button>
@@ -906,19 +1072,19 @@
 
         <div class="status-strip">
           <div class="stat">
-            <span class="label">??</span>
-            <strong id="status-text">???</strong>
+            <span class="label">局面</span>
+            <strong id="status-text">解题中</strong>
           </div>
           <div class="stat">
-            <span class="label">??</span>
+            <span class="label">用时</span>
             <strong id="timer-text">00:00.0</strong>
           </div>
           <div class="stat">
-            <span class="label">?????</span>
+            <span class="label">已确认安全</span>
             <strong id="safe-progress">0 / 0</strong>
           </div>
           <div class="stat">
-            <span class="label">???</span>
+            <span class="label">已插旗</span>
             <strong id="flag-progress">0 / 0</strong>
           </div>
         </div>
@@ -943,62 +1109,77 @@
 
         <div class="legend">
           <div class="legend-card">
-            <h3>数字永远是主角</h3>
-            <p>未判格不再放大字标签；已判安全和已标雷也都缩成角标。这样做题时视线永远先落在数字，而不是被状态文字打断。</p>
+            <h3>About</h3>
+            <p></p>
           </div>
           <div class="legend-card">
-            <h3>反馈更贴近扫雷</h3>
-            <p>确认安全时是冷色扫描闪光，插旗时是暖色火花，踩雷时会先白闪再爆红。动效会很短，不会拖慢解题节奏。</p>
+            <h3>Update</h3>
+            <p></p>
           </div>
           <div class="legend-card">
-            <h3>手机也能玩</h3>
-            <p>这份仍然是单 HTML，本地双击可玩；手机浏览器里也能直接打开，单击确认安全，长按标雷。</p>
+            <h3>FAQ</h3>
+            <p></p>
           </div>
         </div>
       </section>
 
       <aside class="side-panel">
         <section class="card">
-          <span class="label">????</span>
-          <h2 id="difficulty-name" class="difficulty-name">????</h2>
+          <span class="label">当前难度</span>
+          <h2 id="difficulty-name" class="difficulty-name">幼儿园级</h2>
           <p id="difficulty-copy" class="difficulty-copy"></p>
           <div class="mini-stats">
             <div class="mini-block">
-              <span class="label">????</span>
+              <span class="label">隐藏雷数</span>
               <strong id="mine-count-text">0</strong>
             </div>
             <div class="mini-block">
-              <span class="label">????</span>
+              <span class="label">图号 / 题名</span>
               <strong id="variant-text">A</strong>
             </div>
             <div class="mini-block">
-              <span class="label">????</span>
+              <span class="label">通关人次</span>
               <strong id="clear-count-text">--</strong>
             </div>
             <div class="mini-block">
-              <span class="label">????</span>
+              <span class="label">最快用时</span>
               <strong id="fastest-text">--</strong>
             </div>
           </div>
           <div class="tips">
-            <div id="touch-tip" class="tiny">???????????????????????????????????????</div>
+            <div id="touch-tip" class="tiny">电脑：左键确认安全，右键插旗。手机：轻点确认安全；长按未判格插旗；从旗子上重新长按可撤旗。</div>
             <div id="difficulty-note" class="tiny"></div>
           </div>
-          <p class="footer-note">??????????????????????????</p>
+          <p class="footer-note">支持指定图号对战，也支持随机换图练习。正式比拼时，建议先约定好难度和图号。</p>
         </section>
 
         <section class="card">
-          <span id="rank-mode" class="label">????</span>
-          <h2 class="difficulty-name" style="font-size:24px;margin-top:8px;">????</h2>
+          <span id="rank-mode" class="label">在线排行</span>
+          <h2 id="current-rank-title" class="difficulty-name" style="font-size:24px;margin-top:8px;">本图前三</h2>
           <div id="leaderboard-list" class="leaderboard-list"></div>
-          <div id="leaderboard-note" class="tiny">?????????</div>
+          <div id="leaderboard-note" class="tiny">通关后可留下名字。</div>
           <div id="submit-panel" class="submit-panel hidden">
             <div id="submit-copy" class="tiny"></div>
             <div class="submit-form">
-              <input id="username-input" class="name-input" type="text" maxlength="16" placeholder="??????">
-              <button id="submit-score-btn" type="button" class="primary-btn">????</button>
+              <input id="username-input" class="name-input" type="text" maxlength="16" placeholder="输入一个名字">
+              <button id="submit-score-btn" type="button" class="primary-btn">提交成绩</button>
             </div>
             <div id="submit-status" class="tiny"></div>
+          </div>
+        </section>
+
+        <section class="card honor-card honor-tabs-card">
+          <span id="glory-label" class="label">Honor</span>
+          <div class="honor-switch" role="tablist" aria-label="Honor boards">
+            <button id="glory-title" type="button" class="honor-tab active" data-honor-view="glory" aria-selected="true">Glory</button>
+            <button id="impossible-hall-title" type="button" class="honor-tab" data-honor-view="impossible" aria-selected="false">Impossible</button>
+          </div>
+          <p id="glory-note" class="honor-note"></p>
+          <div id="glory-panel" class="honor-panel">
+            <div id="glory-list" class="leaderboard-list"></div>
+          </div>
+          <div id="impossible-hall-panel" class="honor-panel hidden">
+            <div id="impossible-hall-list" class="leaderboard-list"></div>
           </div>
         </section>
 
@@ -1011,18 +1192,33 @@
       </aside>
     </div>
     <footer class="credits">
-      <span id="credits-copy">Dev footer</span>
-      <a href="https://github.com/Cyh29hao/Static-Online-Minesweeper-Game" target="_blank" rel="noreferrer" aria-label="GitHub repository">
-        <svg class="github-badge" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-          <path d="M12 2C6.477 2 2 6.589 2 12.248c0 4.527 2.865 8.368 6.839 9.723.5.095.682-.221.682-.492 0-.243-.009-.889-.014-1.744-2.782.617-3.369-1.375-3.369-1.375-.455-1.177-1.11-1.49-1.11-1.49-.908-.636.069-.623.069-.623 1.004.072 1.532 1.054 1.532 1.054.892 1.572 2.341 1.118 2.91.855.091-.664.349-1.118.635-1.375-2.221-.258-4.556-1.137-4.556-5.062 0-1.118.389-2.033 1.029-2.75-.104-.258-.446-1.298.097-2.707 0 0 .84-.275 2.75 1.05A9.303 9.303 0 0 1 12 6.845c.85.004 1.705.118 2.504.346 1.909-1.325 2.748-1.05 2.748-1.05.545 1.409.203 2.449.1 2.707.64.717 1.027 1.632 1.027 2.75 0 3.936-2.338 4.8-4.566 5.053.359.319.679.948.679 1.911 0 1.379-.012 2.491-.012 2.83 0 .274.18.592.688.491C19.138 20.612 22 16.772 22 12.248 22 6.589 17.523 2 12 2Z"></path>
-        </svg>
-        <span id="github-copy">GitHub</span>
-      </a>
+      <div class="credits-copywrap">
+        <span id="credits-copy">Developed by Cyh29hao. 这是持续打磨中的开源静态逻辑题项目，欢迎试玩、反馈与在注明来源的前提下理性分享。</span>
+        <span id="project-name-bottom" class="credits-project">Static-Online-Minesweeper-Game</span>
+        <span id="version-copy" class="credits-version">Ver 0.4.3</span>
+      </div>
+      <div class="credits-links">
+        <a class="icon-link" href="https://github.com/Cyh29hao/Static-Online-Minesweeper-Game" target="_blank" rel="noreferrer" aria-label="GitHub repository">
+          <svg class="github-badge" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 2C6.477 2 2 6.589 2 12.248c0 4.527 2.865 8.368 6.839 9.723.5.095.682-.221.682-.492 0-.243-.009-.889-.014-1.744-2.782.617-3.369-1.375-3.369-1.375-.455-1.177-1.11-1.49-1.11-1.49-.908-.636.069-.623.069-.623 1.004.072 1.532 1.054 1.532 1.054.892 1.572 2.341 1.118 2.91.855.091-.664.349-1.118.635-1.375-2.221-.258-4.556-1.137-4.556-5.062 0-1.118.389-2.033 1.029-2.75-.104-.258-.446-1.298.097-2.707 0 0 .84-.275 2.75 1.05A9.303 9.303 0 0 1 12 6.845c.85.004 1.705.118 2.504.346 1.909-1.325 2.748-1.05 2.748-1.05.545 1.409.203 2.449.1 2.707.64.717 1.027 1.632 1.027 2.75 0 3.936-2.338 4.8-4.566 5.053.359.319.679.948.679 1.911 0 1.379-.012 2.491-.012 2.83 0 .274.18.592.688.491C19.138 20.612 22 16.772 22 12.248 22 6.589 17.523 2 12 2Z"></path>
+          </svg>
+          <span id="github-copy" class="footer-link-text">GitHub</span>
+        </a>
+        <a class="icon-link" href="mailto:cyh29hao@sjtu.edu.cn" aria-label="Email Cyh29hao">
+          <svg class="mail-badge" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M4 6.75h16a1 1 0 0 1 1 1v8.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-8.5a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.7"></path>
+            <path d="m4.5 8 7.5 5.5L19.5 8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path>
+          </svg>
+          <span class="footer-link-text">Email</span>
+        </a>
+      </div>
     </footer>
   </div>
   <script src="app.js"></script>
 </body>
 </html>
+
+
 
 
 

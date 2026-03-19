@@ -1021,6 +1021,34 @@
     </footer>
   </div>
   <script src="app.js"></script>
+
+<script>
+window.addEventListener('load', () => {
+  const out = document.createElement('pre');
+  out.id = 'verify-output';
+  out.style.whiteSpace = 'pre-wrap';
+  out.style.fontSize = '12px';
+  out.style.marginTop = '12px';
+  document.body.appendChild(out);
+  const select = document.getElementById('difficulty-select');
+  select.value = 'impossible';
+  select.dispatchEvent(new Event('change', { bubbles: true }));
+  setTimeout(() => {
+    const puzzleOptions = [...document.getElementById('puzzle-select').options].map((o) => o.textContent.trim()).join(' | ');
+    const difficultyName = document.getElementById('difficulty-name').textContent.trim();
+    const difficultyCopy = document.getElementById('difficulty-copy').textContent.trim();
+    const difficultyNote = document.getElementById('difficulty-note').textContent.trim();
+    const variantText = document.getElementById('variant-text').textContent.trim();
+    out.textContent = [
+      'difficulty=' + difficultyName,
+      'copy=' + difficultyCopy,
+      'note=' + difficultyNote,
+      'variant=' + variantText,
+      'options=' + puzzleOptions
+    ].join(String.fromCharCode(10));
+  }, 180);
+});
+</script>
 </body>
 </html>
 

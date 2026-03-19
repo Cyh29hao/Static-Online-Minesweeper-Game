@@ -38,6 +38,48 @@ const LEVELS = {
     summary: "几乎整盘都是中值数字，简单模式解不开，需要长段连锁逻辑才能稳定推进。",
     note: "这是刻意做得很密的图，读法更接近静态逻辑题而不是普通扫雷残局。",
     board: "1100000100010011000101100001111011011001010010000000101000001001000101000000110110000011110001010100"
+  },
+  impossible: {
+    name: "\u6311\u6218\u4e0d\u53ef\u80fd\u7ea7",
+    summary: "\u8fd9\u4e00\u6863\u4e0d\u518d\u662f\u5355\u5f20\u5e95\u56fe\u65cb\u8f6c\uff0c\u800c\u662f\u4e00\u7ec4\u547d\u540d\u7edd\u8c31\u3002\u5b83\u4eec\u96f7\u91cf\u3001\u9898\u98ce\u90fd\u4e0d\u540c\uff0c\u4f46\u90fd\u6545\u610f\u628a\u5165\u53e3\u85cf\u5f97\u5f88\u6df1\u3002",
+    note: "\u8fd9\u4e9b\u9898\u4f1a\u5148\u7528\u5347\u7ea7\u540e\u7684\u68c0\u9a8c\u7a0b\u5e8f\u8dd1\u57fa\u7840\u5c42\uff0c\u518d\u8dd1\u5355\u70b9\u8bd5\u63a2\u5c42\uff1b\u53ea\u6709\u4ecd\u7136\u51e0\u4e4e\u6ca1\u6709\u81ea\u7136\u5165\u53e3\u7684\u9898\uff0c\u624d\u4f1a\u7559\u5728\u8fd9\u91cc\u3002",
+    puzzles: [
+      {
+        key: "ge-yun-shou",
+        code: "\u8c31\u4e00",
+        title: "\u9694\u4e91\u624b",
+        note: "\u5165\u53e3\u88ab\u62c6\u6563\u5728\u51e0\u7247\u533a\u57df\u91cc\uff0c\u5fc5\u987b\u628a\u8fdc\u5904\u6570\u5b57\u4e32\u8054\u8d77\u6765\u770b\uff0c\u624d\u80fd\u627e\u5230\u7b2c\u4e00\u53e3\u6c14\u3002",
+        board: "1110000111010110111000001010001001101111010100000100100100011000101010110001110010100101111001000000"
+      },
+      {
+        key: "kou-tian-guan",
+        code: "\u8c31\u4e8c",
+        title: "\u53e9\u5929\u5173",
+        note: "\u51e0\u4e4e\u6574\u76d8\u90fd\u662f\u4e2d\u503c\u6570\u5b57\uff0c\u5c40\u90e8\u770b\u4f3c\u90fd\u80fd\u8bf4\u4e24\u53e5\uff0c\u771f\u6b63\u843d\u5b50\u65f6\u5374\u5e38\u5e38\u8981\u786c\u62f1\u4e2d\u76d8\u3002",
+        board: "0001001100100101101001001000001101111101111100001101010111111011000001100100001100111010111101010001"
+      },
+      {
+        key: "man-cheng-xue",
+        code: "\u8c31\u4e09",
+        title: "\u6ee1\u57ce\u96ea",
+        note: "\u5168\u76d8\u8fd1\u4e4e\u88ab\u540c\u7c7b\u6570\u5b57\u8986\u76d6\uff0c\u8bfb\u8d77\u6765\u50cf\u4e00\u7247\u767d\u832b\u832b\u7684\u96ea\u5e55\uff0c\u771f\u6b63\u96be\u70b9\u5728\u4e8e\u5206\u8fa8\u7ec6\u5fae\u7834\u53e3\u3002",
+        board: "1101010101101010101001010101011010101010110101010110101010100101010101101010101001010101011010101010"
+      },
+      {
+        key: "duan-long-mai",
+        code: "\u8c31\u56db",
+        title: "\u65ad\u9f99\u8109",
+        note: "\u9ad8\u5bc6\u5ea6\u76d8\u9762\u51e0\u4e4e\u4e0d\u7ed9\u660e\u663e\u5165\u53e3\uff0c\u5fc5\u987b\u5728\u591a\u4e2a\u6218\u573a\u95f4\u6765\u56de\u5207\u6362\uff0c\u624d\u80fd\u622a\u4f4f\u771f\u6b63\u7684\u4e3b\u7ebf\u3002",
+        board: "1001101101010011001101100001001110110100111001101110101111000010110110110110111011010100010011011110"
+      },
+      {
+        key: "wan-lei-hai",
+        code: "\u8c31\u4e94",
+        title: "\u4e07\u96f7\u6d77",
+        note: "\u96f7\u91cf\u6781\u9ad8\uff0c\u5b89\u5168\u683c\u50cf\u5b64\u5c9b\u4e00\u6837\u96f6\u788e\u3002\u5f88\u591a\u65f6\u5019\u4e0d\u662f\u5728\u627e\u96f7\uff0c\u800c\u662f\u5728\u82e6\u82e6\u786e\u8ba4\u54ea\u4e00\u5c0f\u5757\u8fd8\u80fd\u6d3b\u3002",
+        board: "0101000111001110100111110111011011111100100111000101010111111011100101101111101011011101011111100011"
+      }
+    ]
   }
 };
 
@@ -50,6 +92,7 @@ const state = {
   safeTotal: 0,
   variantIndex: 0,
   variantPool: [],
+  currentPuzzle: null,
   result: "playing",
   explodedIndex: -1,
   pendingMineIndex: -1,
@@ -131,9 +174,9 @@ const refs = {
 };
 
 function applyStaticCopy() {
-  document.title = "静态扫雷 Ver0.4.1";
+  document.title = "静态扫雷 Ver0.4.2";
   const eyebrow = document.querySelector(".eyebrow");
-  if (eyebrow) eyebrow.textContent = "Version 0.4.1 - HTML + JS";
+  if (eyebrow) eyebrow.textContent = "Version 0.4.2 - HTML + JS";
 
   const guideData = [
     ["玩法", "数字表示周围 8 格里的雷数，整张图从开局就会全部显示。"],
@@ -151,7 +194,7 @@ function applyStaticCopy() {
 
   const toolbarLabels = document.querySelectorAll(".toolbar .field .label");
   if (toolbarLabels[0]) toolbarLabels[0].textContent = "难度";
-  if (toolbarLabels[1]) toolbarLabels[1].textContent = "图号";
+  if (toolbarLabels[1]) toolbarLabels[1].textContent = "\u56fe\u53f7 / \u8c31\u540d";
 
   const statLabels = ["局面", "用时", "已确认安全", "已插旗"];
   document.querySelectorAll(".status-strip .label").forEach((node, index) => {
@@ -163,7 +206,7 @@ function applyStaticCopy() {
     const labels = sideCards[0].querySelectorAll(".label");
     if (labels[0]) labels[0].textContent = "当前难度";
     const miniLabels = sideCards[0].querySelectorAll(".mini-block .label");
-    const miniCopy = ["隐藏雷数", "变体编号", "通关人次", "最快用时"];
+    const miniCopy = ["\u9690\u85cf\u96f7\u6570", "\u56fe\u53f7 / \u9898\u540d", "\u901a\u5173\u4eba\u6b21", "\u6700\u5feb\u7528\u65f6"];
     miniLabels.forEach((node, index) => {
       if (miniCopy[index]) node.textContent = miniCopy[index];
     });
@@ -178,7 +221,7 @@ function applyStaticCopy() {
 
   refs.touchTip.textContent = "电脑：左键确认安全，右键插旗。手机：轻点确认安全；长按未判格插旗；从旗子上重新长按可撤旗。";
   refs.usernameInput.placeholder = "输入一个名字";
-  refs.creditsCopy.textContent = "Developed by Cyh29hao. 这是持续打磨中的开源逻辑题小游戏，欢迎试玩、反馈与理性转载。";
+  refs.creditsCopy.textContent = "Developed by Cyh29hao. 这是持续打磨中的开源静态逻辑题项目，欢迎试玩、反馈与在注明来源的前提下理性分享。";
   refs.githubCopy.textContent = "GitHub";
 
   const legendCards = document.querySelectorAll(".legend-card");
@@ -186,7 +229,7 @@ function applyStaticCopy() {
     const title = legendCards[2].querySelector("h3");
     const copy = legendCards[2].querySelector("p");
     if (title) title.textContent = "竞技更方便";
-    if (copy) copy.textContent = "除了同难度随机换图，现在还能直接选具体图号，方便和别人打同一张图。";
+    if (copy) copy.textContent = "除了同难度随机换图，现在还能直接选具体图号，方便和别人打同一张图；新加的挑战不可能级也能直接约图对练。";
   }
 }
 
@@ -245,7 +288,21 @@ function buildVariant(baseBoard, variantIndex) {
 }
 
 function buildVariantPool(levelKey) {
-  const base = bitstringToArray(LEVELS[levelKey].board);
+  const level = LEVELS[levelKey];
+  if (Array.isArray(level.puzzles)) {
+    return level.puzzles.map((puzzle, index) => ({
+      board: bitstringToArray(puzzle.board),
+      variantIndex: index,
+      optionLabel: `${puzzle.code} \u00b7 \u300a${puzzle.title}\u300b`,
+      shortLabel: puzzle.code,
+      displayName: `\u300a${puzzle.title}\u300b`,
+      detail: puzzle.note,
+      rankName: `${level.name}\u300a${puzzle.title}\u300b`,
+      key: `${levelKey}-${puzzle.key}`
+    }));
+  }
+
+  const base = bitstringToArray(level.board);
   const variants = [];
   const seen = new Set();
   for (let variantIndex = 0; variantIndex < 8; variantIndex += 1) {
@@ -253,7 +310,17 @@ function buildVariantPool(levelKey) {
     const signature = board.join("");
     if (!seen.has(signature)) {
       seen.add(signature);
-      variants.push({ board, variantIndex });
+      const label = VARIANT_LABELS[variantIndex] || String(variantIndex + 1);
+      variants.push({
+        board,
+        variantIndex,
+        optionLabel: `\u56fe ${label}`,
+        shortLabel: label,
+        displayName: `\u56fe ${label}`,
+        detail: level.note,
+        rankName: `${level.name} \u56fe ${label}`,
+        key: `${levelKey}-${signature}`
+      });
     }
   }
   return variants;
@@ -261,13 +328,13 @@ function buildVariantPool(levelKey) {
 
 function selectVariant(levelKey, reshuffleOnly = false, preferredVariantIndex = null) {
   const variants = buildVariantPool(levelKey);
-  const previousSignature = state.board.join("");
+  const previousKey = state.currentPuzzle?.key || `${levelKey}-${state.board.join("")}`;
   if (preferredVariantIndex != null) {
     const exact = variants.find((variant) => variant.variantIndex === preferredVariantIndex);
     return { variants, selected: exact || variants[0] };
   }
   const candidates = reshuffleOnly
-    ? variants.filter((variant) => variant.board.join("") !== previousSignature)
+    ? variants.filter((variant) => variant.key !== previousKey)
     : variants;
   const pool = candidates.length > 0 ? candidates : variants;
   return { variants, selected: pool[Math.floor(Math.random() * pool.length)] };
@@ -363,7 +430,7 @@ function freezeTimer() {
 }
 
 function getPuzzleSignature() {
-  return `${state.levelKey}-${state.board.join("")}`;
+  return state.currentPuzzle?.key || `${state.levelKey}-${state.board.join("")}`;
 }
 
 function hasOnlineRanking() {
@@ -484,7 +551,7 @@ async function submitScore() {
   }
   const entry = {
     puzzle_key: getPuzzleSignature(),
-    puzzle_name: `${LEVELS[state.levelKey].name} ${VARIANT_LABELS[state.variantIndex] || "A"}`,
+    puzzle_name: state.currentPuzzle?.rankName || `${LEVELS[state.levelKey].name} ${VARIANT_LABELS[state.variantIndex] || "A"}`,
     username,
     elapsed_ms: getElapsedMs(),
     played_at: new Date().toISOString()
@@ -595,8 +662,7 @@ function clearTransientState() {
 
 function syncPuzzlePicker() {
   refs.puzzleSelect.innerHTML = state.variantPool.map((variant) => {
-    const label = VARIANT_LABELS[variant.variantIndex] || String(variant.variantIndex + 1);
-    return `<option value="${variant.variantIndex}">图 ${label}</option>`;
+    return `<option value="${variant.variantIndex}">${variant.optionLabel}</option>`;
   }).join("");
   refs.puzzleSelect.value = String(state.variantIndex);
 }
@@ -606,6 +672,7 @@ function startGame(levelKey, reshuffleOnly = false, preferredVariantIndex = null
   state.levelKey = levelKey;
   const { variants, selected } = selectVariant(levelKey, reshuffleOnly, preferredVariantIndex);
   state.variantPool = variants;
+  state.currentPuzzle = selected;
   state.board = selected.board;
   state.clues = computeClues(selected.board);
   state.marks = new Array(CELL_COUNT).fill("unknown");
@@ -799,10 +866,10 @@ function renderStatus() {
   refs.safeProgress.textContent = `${safeMarked} / ${state.safeTotal}`;
   refs.flagProgress.textContent = `${flags} / ${state.mineCount}`;
   refs.difficultyName.textContent = level.name;
-  refs.difficultyCopy.textContent = level.summary;
-  refs.difficultyNote.textContent = level.note;
+  refs.difficultyCopy.textContent = state.currentPuzzle?.displayName ? `${level.summary} \u5f53\u524d\u9898\uff1a${state.currentPuzzle.displayName}\u3002` : level.summary;
+  refs.difficultyNote.textContent = state.currentPuzzle?.detail || level.note;
   refs.mineCountText.textContent = String(state.mineCount);
-  refs.variantText.textContent = VARIANT_LABELS[state.variantIndex] || "A";
+  refs.variantText.textContent = state.currentPuzzle?.shortLabel || VARIANT_LABELS[state.variantIndex] || "A";
   refs.touchTip.textContent = "电脑：左键确认安全，右键插旗。手机：轻点确认安全；长按未判格插旗；从旗子上重新长按可撤旗。";
 
   if (state.result === "playing") {
@@ -1033,3 +1100,5 @@ function initDifficultyPicker() {
 applyStaticCopy();
 initDifficultyPicker();
 startGame(state.levelKey);
+
+

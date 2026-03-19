@@ -8,8 +8,12 @@ const SCORE_CONFIG = {
   table: "minesweeper_scores"
 };
 const PROJECT_NAME = "Static-Online-Minesweeper-Game";
-const VERSION_LABEL = "Ver 0.4.3";
+const VERSION_LABEL = "Ver 0.4.4";
 const RELEASE_LABEL = "\u53d1\u5e03\u4e8e 2026-03-19";
+const IS_TOUCH_DEVICE = window.matchMedia("(pointer: coarse)").matches || ("ontouchstart" in window);
+const LIGHT_MOBILE_MODE = IS_TOUCH_DEVICE || window.matchMedia("(max-width: 760px)").matches || window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const TOUCH_LONG_PRESS_MS = 500;
+const TOUCH_CANCEL_DISTANCE_SQ = 1024;
 
 const LEVELS = {
   kindergarten: {
@@ -198,9 +202,9 @@ const refs = {
 };
 
 function applyStaticCopy() {
-  document.title = "静态扫雷 Ver0.4.3";
+  document.title = "静态扫雷 Ver0.4.4";
   const eyebrow = document.querySelector(".eyebrow");
-  if (eyebrow) eyebrow.textContent = "Version 0.4.3 - HTML + JS";
+  if (eyebrow) eyebrow.textContent = "Version 0.4.4 - HTML + JS";
 
   const guideData = [
     ["玩法", "数字表示周围 8 格里的雷数，整张图从开局就会全部显示。"],
@@ -243,7 +247,7 @@ function applyStaticCopy() {
 
   const legendData = [
     ["关于", "这是一份把全部数字开局展示的静态扫雷。你要根据数字关系确认安全格、标出雷，并在唯一解里尽量少走弯路。"],
-    ["版本速递", "0.4.3 把挑战绝谱、在线榜单、同题跳转和移动端长按撤旗整合到一页里，同时继续压缩状态噪音，让读盘更清楚。"],
+    ["版本速递", "0.4.4 针对手机端补上了轻量渲染、可靠长按和更紧凑的棋盘适配，让滑动和落子都更稳。"],
     ["常见问题", "触屏端请尽量稳住手指再长按；GitHub 页面更新后若还是旧版，按 Ctrl+F5 强刷一次；如果还有异常，右下角邮箱可以直接联系我。"]
   ];
   document.querySelectorAll(".legend-card").forEach((card, index) => {
@@ -713,6 +717,10 @@ function clearFlash() {
 }
 
 function triggerCellFlash(index, type, duration = 260) {
+  if (LIGHT_MOBILE_MODE && type !== "mine") {
+    clearFlash();
+    return;
+  }
   clearFlash();
   const token = Date.now();
   state.flashIndex = index;
@@ -724,10 +732,15 @@ function triggerCellFlash(index, type, duration = 260) {
       state.flashType = "";
       renderBoard();
     }
-  }, duration);
+  }, LIGHT_MOBILE_MODE ? Math.min(duration, 220) : duration);
 }
 
 function triggerBoardBlast() {
+  if (LIGHT_MOBILE_MODE) {
+    state.boardBlast = false;
+    state.boardBlastToken = 0;
+    return;
+  }
   window.clearTimeout(boardBlastTimeoutId);
   const token = Date.now();
   state.boardBlast = true;
@@ -816,7 +829,7 @@ function setPendingLoss(index) {
   triggerCellFlash(index, "mine", 420);
   triggerBoardBlast();
   if (navigator.vibrate) {
-    navigator.vibrate([18, 30, 36]);
+    navigator.vibrate(LIGHT_MOBILE_MODE ? 18 : [18, 30, 36]);
   }
 }
 
@@ -1118,7 +1131,7 @@ function jumpToPuzzle(puzzleKey) {
   startGame(meta.levelKey, false, meta.variantIndex);
   window.requestAnimationFrame(() => {
     const top = refs.boardWrap.getBoundingClientRect().top + window.scrollY - 18;
-    window.scrollTo({ top, behavior: "smooth" });
+    window.scrollTo({ top, behavior: IS_TOUCH_DEVICE ? "auto" : "smooth" });
   });
 }
 
@@ -1163,37 +1176,43 @@ refs.board.addEventListener("touchstart", (event) => {
   state.touch.startY = touch.clientY;
   state.touch.moved = false;
   if (state.touch.mode !== "ignore") {
+    event.preventDefault();
+    state.touch.suppressClick = true;
+    state.touch.suppressUntil = Date.now() + 900;
     state.touch.armedButton = button;
     button.classList.add("touch-arming");
     state.touch.timerId = window.setTimeout(() => {
       state.touch.longTriggered = true;
       state.touch.suppressClick = true;
-      state.touch.suppressUntil = Date.now() + 650;
+      state.touch.suppressUntil = Date.now() + 900;
       if (state.result === "playing") {
         if (state.touch.mode === "flag") {
           setFlagState(index, true);
         } else if (state.touch.mode === "unflag") {
           setFlagState(index, false);
         }
-        if (navigator.vibrate) navigator.vibrate(14);
+        if (navigator.vibrate) navigator.vibrate(LIGHT_MOBILE_MODE ? 10 : 14);
       }
       clearTouchArming();
-    }, 500);
+    }, TOUCH_LONG_PRESS_MS);
   }
-}, { passive: true });
+}, { passive: false });
 
 refs.board.addEventListener("touchmove", (event) => {
   if (state.touch.index < 0 || event.touches.length !== 1) return;
   const touch = event.touches[0];
   const dx = touch.clientX - state.touch.startX;
   const dy = touch.clientY - state.touch.startY;
-  if ((dx * dx) + (dy * dy) > 324) {
+  if (state.touch.mode !== "ignore") {
+    event.preventDefault();
+  }
+  if ((dx * dx) + (dy * dy) > TOUCH_CANCEL_DISTANCE_SQ) {
     state.touch.moved = true;
     window.clearTimeout(state.touch.timerId);
     state.touch.timerId = 0;
     clearTouchArming();
   }
-}, { passive: true });
+}, { passive: false });
 
 refs.board.addEventListener("touchend", (event) => {
   const button = event.target.closest("[data-index]");
@@ -1201,6 +1220,9 @@ refs.board.addEventListener("touchend", (event) => {
   const longTriggered = state.touch.longTriggered;
   const moved = state.touch.moved;
   const startMark = state.touch.startMark;
+  if (state.touch.mode !== "ignore") {
+    event.preventDefault();
+  }
   window.clearTimeout(state.touch.timerId);
   state.touch.timerId = 0;
   clearTouchArming();
@@ -1211,28 +1233,29 @@ refs.board.addEventListener("touchend", (event) => {
 
   if (moved || longTriggered) {
     state.touch.suppressClick = true;
-    state.touch.suppressUntil = Date.now() + 500;
+    state.touch.suppressUntil = Date.now() + 650;
     return;
   }
 
   if (state.result === "playing" && startMark === "unknown" && Number.isInteger(index)) {
     state.touch.suppressClick = true;
-    state.touch.suppressUntil = Date.now() + 320;
+    state.touch.suppressUntil = Date.now() + 650;
     handleBoardClick(index);
-    window.setTimeout(() => { state.touch.suppressClick = false; }, 110);
+    window.setTimeout(() => { state.touch.suppressClick = false; }, 140);
   } else {
     state.touch.suppressClick = true;
-    state.touch.suppressUntil = Date.now() + 220;
+    state.touch.suppressUntil = Date.now() + 420;
   }
 });
 
 refs.board.addEventListener("touchcancel", () => {
   resetTouchState();
   state.touch.suppressClick = true;
-  state.touch.suppressUntil = Date.now() + 220;
+  state.touch.suppressUntil = Date.now() + 320;
 });
 
-refs.boardWrap.addEventListener("mousemove", (event) => {
+if (!IS_TOUCH_DEVICE) {
+  refs.boardWrap.addEventListener("mousemove", (event) => {
   const rect = refs.boardWrap.getBoundingClientRect();
   const x = ((event.clientX - rect.left) / rect.width) * 100;
   const y = ((event.clientY - rect.top) / rect.height) * 100;
@@ -1241,9 +1264,10 @@ refs.boardWrap.addEventListener("mousemove", (event) => {
   refs.boardWrap.style.setProperty("--pointer-alpha", "1");
 });
 
-refs.boardWrap.addEventListener("mouseleave", () => {
-  refs.boardWrap.style.setProperty("--pointer-alpha", "0");
-});
+  refs.boardWrap.addEventListener("mouseleave", () => {
+    refs.boardWrap.style.setProperty("--pointer-alpha", "0");
+  });
+}
 
 document.addEventListener("click", (event) => {
   const honorTrigger = event.target.closest("[data-honor-view]");

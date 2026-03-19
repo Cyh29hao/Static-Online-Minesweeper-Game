@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>静态扫雷 Ver0.4.3</title>
+  <title>???? Ver0.4.4</title>
   <style>
     :root {
       --bg: radial-gradient(circle at top, rgba(61, 214, 255, 0.18), transparent 28%),
@@ -1006,13 +1006,64 @@
       72% { transform: translateX(3px); }
     }
 
+    @media (hover: none), (pointer: coarse) {
+      body::before,
+      body::after {
+        display: none;
+        animation: none;
+      }
+
+      .panel,
+      .guide-card,
+      .stat,
+      .card,
+      .legend-card,
+      .loss-card {
+        backdrop-filter: none;
+        box-shadow: 0 16px 30px rgba(0, 0, 0, 0.18);
+      }
+
+      .board-wrap {
+        overflow: hidden;
+        transition: none;
+      }
+
+      .board-wrap::after,
+      .fx-layer {
+        display: none;
+      }
+
+      .cell,
+      .cell:hover,
+      .cell.safe,
+      .cell.flagged,
+      .cell.pending-mine,
+      .cell.mine-hit,
+      .cell.touch-arming,
+      .honor-tab.active {
+        box-shadow: inset 0 0 0 1px rgba(7, 14, 27, 0.72), 0 8px 16px rgba(0, 0, 0, 0.14);
+      }
+
+      .cell {
+        transition: border-color 0.08s ease, background 0.08s ease;
+      }
+
+      .cell:hover {
+        transform: none;
+      }
+
+      .loss-panel::before {
+        backdrop-filter: none;
+      }
+    }
+
     @media (max-width: 1080px) {
       .layout { grid-template-columns: 1fr; }
       .side-panel { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
 
     @media (max-width: 760px) {
-      :root { --cell-size: min(9vw, 48px); }
+      :root { --cell-size: min(calc((100vw - 96px) / 10), 38px); }
       .shell { padding: 16px 12px 26px; }
       .play-panel { padding: 18px; }
       .quick-guide,
@@ -1022,7 +1073,17 @@
       .side-panel,
       .mini-stats,
       .loss-actions { grid-template-columns: 1fr; }
-      .answer-board { --cell-size: min(8vw, 32px); }
+      .board,
+      .answer-board { gap: 6px; }
+      .board-wrap {
+        padding: 12px;
+        overflow: hidden;
+      }
+      .cell {
+        touch-action: none;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .answer-board { --cell-size: min(calc((100vw - 112px) / 10), 28px); }
       .credits { align-items: flex-start; }
     }
   </style>
@@ -1032,7 +1093,7 @@
     <div class="layout">
       <section class="panel play-panel">
         <div class="hero">
-          <span class="eyebrow">Version 0.4.3 - HTML + JS</span>
+          <span class="eyebrow">Version 0.4.4 - HTML + JS</span>
           <h1><a class="title-link" href="https://cyh29hao.github.io/Static-Online-Minesweeper-Game/">静态扫雷</a></h1>
           <p id="project-name-top" class="project-name">Static-Online-Minesweeper-Game</p>
           <p class="subhead">看数字，找出所有雷。</p>
